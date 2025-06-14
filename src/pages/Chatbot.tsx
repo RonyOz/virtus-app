@@ -97,13 +97,11 @@ const Chatbot: React.FC = () => {
       }, 1000);
     } catch (error) {
       console.error('Error al obtener respuesta:', error);
-      const fallbackResponse = getBotResponse(inputText);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: fallbackResponse.text,
+        text: "Lo siento, estoy teniendo problemas para conectarme con el servidor. Por favor, verifica que la API key esté configurada correctamente en el archivo .env",
         isBot: true,
-        timestamp: new Date(),
-        category: fallbackResponse.category
+        timestamp: new Date()
       };
       
       setTimeout(() => {
