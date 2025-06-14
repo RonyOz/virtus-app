@@ -22,7 +22,7 @@ const botResponses = {
   mood_good: [
     "¡Me alegra saber que te sientes bien! 🌟 Aprovechemos esta energía positiva. ¿Hay algún objetivo que te gustaría trabajar hoy?",
     "¡Excelente! Cuando nos sentimos bien, es el momento perfecto para dar pasos hacia nuestras metas. ¿Qué te gustaría hacer hoy?",
-    "Tu energía positiva es contagiosa. ¿Te parece si revisamos tus objetivos del día?"
+    "Tu energía positiva es contagiosa. ¿Te parece si revisamos tus objetivos del día?ouiohiyhvujyhg"
   ],
   academic: [
     "Para estudiar mejor, te recomiendo la técnica Pomodoro: 25 minutos de estudio intenso + 5 minutos de descanso. ¿Has probado esta técnica?",
@@ -65,6 +65,74 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   /**
+   * Analyzes user message and returns appropriate bot response
+   */
+  const getBotResponse = (userMessage: string): { text: string; category: string } => {
+    const message = userMessage.toLowerCase();
+    
+    // Mood detection
+    if (message.includes('triste') || message.includes('mal') || message.includes('deprimido') || message.includes('bajo')) {
+      return {
+        text: botResponses.mood_low[Math.floor(Math.random() * botResponses.mood_low.length)],
+        category: 'mood'
+      };
+    }
+    
+    if (message.includes('bien') || message.includes('genial') || message.includes('excelente') || message.includes('feliz')) {
+      return {
+        text: botResponses.mood_good[Math.floor(Math.random() * botResponses.mood_good.length)],
+        category: 'mood'
+      };
+    }
+    
+    // Academic help
+    if (message.includes('estudio') || message.includes('examen') || message.includes('tarea') || message.includes('académico')) {
+      return {
+        text: botResponses.academic[Math.floor(Math.random() * botResponses.academic.length)],
+        category: 'academic'
+      };
+    }
+    
+    // Wellness
+    if (message.includes('cansado') || message.includes('estrés') || message.includes('ansiedad') || message.includes('agua')) {
+      return {
+        text: botResponses.wellness[Math.floor(Math.random() * botResponses.wellness.length)],
+        category: 'wellness'
+      };
+    }
+    
+    // Motivation
+    if (message.includes('motivación') || message.includes('desanimado') || message.includes('ayuda') || message.includes('consejo')) {
+      return {
+        text: botResponses.motivation[Math.floor(Math.random() * botResponses.motivation.length)],
+        category: 'motivation'
+      };
+    }
+    
+    // Tips
+    if (message.includes('tip') || message.includes('dato') || message.includes('curioso')) {
+      return {
+        text: botResponses.tips[Math.floor(Math.random() * botResponses.tips.length)],
+        category: 'tips'
+      };
+    }
+    
+    // Default response
+    const allResponses = [
+      ...botResponses.motivation,
+      ...botResponses.wellness,
+      "Cuéntame más sobre eso. ¿Cómo te hace sentir?",
+      "Entiendo. ¿Hay algo específico en lo que te gustaría trabajar?",
+      "Es interesante lo que me cuentas. ¿Has intentado alguna estrategia para manejarlo?"
+    ];
+    
+    return {
+      text: allResponses[Math.floor(Math.random() * allResponses.length)],
+      category: 'general'
+    };
+  };
+
+  /**
    * Sends user message and generates bot response
    */
   const sendMessage = async () => {
@@ -97,11 +165,13 @@ const Chatbot: React.FC = () => {
       }, 1000);
     } catch (error) {
       console.error('Error al obtener respuesta:', error);
+      const fallbackResponse = getBotResponse(inputText);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Lo siento, estoy teniendo problemas para conectarme con el servidor. Por favor, verifica que la API key esté configurada correctamente en el archivo .env",
+        text: fallbackResponse.text,
         isBot: true,
-        timestamp: new Date()
+        timestamp: new Date(),
+        category: fallbackResponse.category
       };
       
       setTimeout(() => {

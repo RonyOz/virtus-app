@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
+<<<<<<< HEAD
+
+/* Brand Colors - Customize these variables to change the app's theme */
+=======
 /* Custom CSS Variables for consistent theming */
+>>>>>>> e08573a612b62f5f66b849e1fb2f24953575a9a4
 :root {
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
