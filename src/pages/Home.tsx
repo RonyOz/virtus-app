@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
  * Modern mobile-first design with cards and animations
  */
 const Home: React.FC = () => {
-  const { pet, dailyGoals, streak, motivationalMessage, wellnessData } = useWellness();
+  const { pet, dailyGoals, streak, motivationalMessage, wellnessData, toggleGoalCompleted } = useWellness();
 
   const completedGoals = dailyGoals.filter(goal => goal.completed).length;
   const completionPercentage = (completedGoals / dailyGoals.length) * 100;
@@ -194,33 +194,42 @@ const Home: React.FC = () => {
           </div>
 
           <div className="space-y-3 mb-4">
-            {dailyGoals.slice(0, 3).map((goal) => (
-              <div key={goal.id} className="flex items-center">
-                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                  goal.completed 
-                    ? 'bg-green-500 border-green-500' 
-                    : 'border-gray-300'
-                }`}>
-                  {goal.completed && (
-                    <span className="text-white text-xs font-bold">✓</span>
-                  )}
-                </div>
-                <span className={`flex-1 ${
-                  goal.completed 
-                    ? 'text-gray-500 line-through' 
-                    : 'text-gray-700'
-                }`}>
-                  {goal.title}
-                </span>
+          {dailyGoals.slice(0, 3).map((goal) => (
+            <button
+              key={goal.id}
+              onClick={() => {
+                if (!goal.completed && typeof toggleGoalCompleted === 'function') {
+                  toggleGoalCompleted(goal.id);
+                }
+              }}
+              className="flex items-center w-full text-left focus:outline-none"
+              disabled={goal.completed}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                goal.completed 
+                  ? 'bg-green-500 border-green-500' 
+                  : 'border-gray-300'
+              }`}>
+                {goal.completed && (
+                  <span className="text-white text-xs font-bold">✓</span>
+                )}
               </div>
-            ))}
+              <span className={`flex-1 ${
+                goal.completed 
+                  ? 'text-gray-500 line-through' 
+                  : 'text-gray-700'
+              }`}>
+                {goal.title}
+              </span>
+            </button>
+          ))}
           </div>
 
           <div className="space-y-2">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
+          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+          style={{ width: `${completionPercentage}%` }}
               ></div>
             </div>
             <p className="text-center text-sm font-medium text-gray-600">
