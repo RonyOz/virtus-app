@@ -50,6 +50,7 @@ interface WellnessContextType {
   feedPet: () => void;
   completeGoal: (goalId: string) => void;
   motivationalMessage: string;
+  toggleGoalCompleted: (id: string) => void;
 }
 
 const WellnessContext = createContext<WellnessContextType | undefined>(undefined);
@@ -113,12 +114,6 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
       title: 'Hacer 5 minutos de meditación',
       completed: false,
       category: 'wellness'
-    },
-    {
-      id: '4',
-      title: 'Llamar a un amigo',
-      completed: false,
-      category: 'social'
     }
   ]);
 
@@ -170,6 +165,14 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const toggleGoalCompleted = (id: string) => {
+    setDailyGoals(prev =>
+      prev.map(goal =>
+        goal.id === id ? { ...goal, completed: !goal.completed } : goal
+      )
+    );
+  }
+
   /**
    * Effect to update pet status over time
    * Pet happiness and health decay if not cared for
@@ -201,7 +204,8 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
       updateWellnessData,
       feedPet,
       completeGoal,
-      motivationalMessage
+      motivationalMessage,
+      toggleGoalCompleted: toggleGoalCompleted
     }}>
       {children}
     </WellnessContext.Provider>
