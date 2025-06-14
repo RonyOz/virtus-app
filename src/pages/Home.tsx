@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Zap, Target, Sparkles, MessageCircle, TrendingUp, Coffee, Moon, Smile } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
 import { motion } from 'framer-motion';
+import { Pet } from '../components/Pet';
 
 /**
  * Home Page Component
@@ -152,33 +153,8 @@ const Home: React.FC = () => {
 
         {/* Pet Section */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Tu mascota: {pet.name}</h3>
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-600">
-              Nivel {Math.floor(pet.level)}
-            </span>
-          </div>
+          <Pet pet={pet} getPetEmoji={getPetEmoji} />
 
-          <div className="flex items-center mb-4">
-            <div className="text-4xl mr-4 animate-bounce-slow">{getPetEmoji()}</div>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center">
-                <Heart className="w-4 h-4 text-red-500 mr-2" />
-                <span className="text-sm text-gray-700">Felicidad: {Math.round(pet.happiness)}%</span>
-              </div>
-              <div className="flex items-center">
-                <Zap className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm text-gray-700">Salud: {Math.round(pet.health)}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${pet.happiness}%` }}
-            ></div>
-          </div>
         </motion.div>
 
         {/* Daily Goals */}
