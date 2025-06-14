@@ -214,31 +214,83 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Daily Questions */}
+        {/* Daily Questions - Improved Cat Mood Picker */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            ¿Qué gato te sientes hoy? 🐱
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
+            ¿Qué gato eres hoy? 🐾
           </h3>
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <p className="text-sm text-gray-500 mb-4 text-center">
+            Elige tu estado de ánimo según el gato que más te representa.
+          </p>
+          <div className="flex gap-3 overflow-x-auto p-2 px-1 justify-center">
             {[
-              'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg',
-              'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg',
-              'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg',
-              'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg',
-              'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg'
-            ].map((src, i) => (
-              <img
+              {
+                src: 'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg',
+                label: 'Tieso',
+                msg: 'A veces el día necesita un cambio 🌀'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg',
+                label: 'Traumado',
+                msg: 'Animo Animo Animo 💪'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg',
+                label: 'Cansao',
+                msg: 'Descansar también es avanzar 🌙'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg',
+                label: 'Todo bien',
+                msg: 'Día tranquilo y feliz ☀️'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg',
+                label: 'Colapso',
+                msg: 'Respira... estás haciendo lo mejor que puedes 🌬️'
+              }
+            ].map(({ src, label, msg }, i) => (
+              <motion.div
                 key={i}
-                src={src}
-                onClick={() => handleAnswer('catMood', src)}
-                className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-200 flex-shrink-0 ${
-                  dailyAnswers.catMood === src 
-                    ? 'border-indigo-500 scale-105 shadow-lg' 
-                    : 'border-transparent hover:border-gray-300'
-                }`}
-              />
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="flex flex-col items-center gap-1"
+              >
+                <img
+                  src={src}
+                  onClick={() => handleAnswer('catMood', src)}
+                  alt={label}
+                  className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-300 flex-shrink-0 ${
+                    dailyAnswers.catMood === src
+                      ? 'border-indigo-500 scale-105 shadow-md'
+                      : 'border-transparent hover:border-gray-300'
+                  }`}
+                />
+                <span className="text-xs text-center text-gray-600">{label}</span>
+              </motion.div>
             ))}
           </div>
+
+          {dailyAnswers.catMood && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 bg-indigo-50 rounded-xl px-4 py-3 text-center text-sm text-indigo-700 font-medium"
+            >
+              {
+                {
+                  'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg': '¡Ese entusiasmo se contagia! 🐱💪',
+                  'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg': 'Día tranquilo y feliz ☀️',
+                  'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg': 'Descansar también es avanzar 🌙',
+                  'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg': 'Respira... estás haciendo lo mejor que puedes 🌬️',
+                  'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg': 'A veces el día necesita un cambio 🌀'
+                }[dailyAnswers.catMood]
+              }
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
