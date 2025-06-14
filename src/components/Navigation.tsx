@@ -64,7 +64,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
       {/* Desktop Navigation - Sidebar */}
       <nav className="desktop-nav">
         <div className="nav-header">
-          <h2>Wellness App</h2>
+          <h2>Virtus</h2>
         </div>
         {navItems.map((item) => {
           const Icon = item.icon;
