@@ -10,7 +10,7 @@ import { Pet } from '../components/Pet';
  * Modern mobile-first design with cards and animations
  */
 const Home: React.FC = () => {
-  const { pet, dailyGoals, streak, motivationalMessage, wellnessData, toggleGoalCompleted } = useWellness();
+  const { pet, dailyGoals, streak, motivationalMessage, wellnessData, toggleGoalCompleted, updatePetHappiness, addVirtualCurrency } = useWellness();
 
   const completedGoals = dailyGoals.filter(goal => goal.completed).length;
   const completionPercentage = (completedGoals / dailyGoals.length) * 100;
@@ -18,11 +18,22 @@ const Home: React.FC = () => {
   const [dailyAnswers, setDailyAnswers] = useState({
     catMood: '',
     sleepQuality: '',
-    energyLevel: ''
+    energyLevel: '',
+    gratitude: '',
+    hydration: '',
+    socialConnection: ''
   });
 
   const handleAnswer = (questionKey: string, answer: string) => {
-    setDailyAnswers(prev => ({ ...prev, [questionKey]: answer }));
+    setDailyAnswers(prev => {
+      const newAnswers = { ...prev, [questionKey]: answer };
+      // Gamification: Increase pet happiness and add virtual currency for answering questions
+      if (updatePetHappiness && addVirtualCurrency) {
+        updatePetHappiness(pet.happiness + 1); // Small happiness boost
+        addVirtualCurrency(5); // Add 5 units of virtual currency
+      }
+      return newAnswers;
+    });
   };
 
   /**
@@ -73,7 +84,7 @@ const Home: React.FC = () => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500"></div>
         <div className="absolute inset-0 bg-black/20"></div>
-        
+
         <div className="relative px-4 py-12 safe-area-top">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -170,42 +181,40 @@ const Home: React.FC = () => {
           </div>
 
           <div className="space-y-3 mb-4">
-          {dailyGoals.slice(0, 3).map((goal) => (
-            <button
-              key={goal.id}
-              onClick={() => {
-                if (!goal.completed && typeof toggleGoalCompleted === 'function') {
-                  toggleGoalCompleted(goal.id);
-                }
-              }}
-              className="flex items-center w-full text-left focus:outline-none"
-              disabled={goal.completed}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                goal.completed 
-                  ? 'bg-green-500 border-green-500' 
+            {dailyGoals.slice(0, 3).map((goal) => (
+              <button
+                key={goal.id}
+                onClick={() => {
+                  if (!goal.completed && typeof toggleGoalCompleted === 'function') {
+                    toggleGoalCompleted(goal.id);
+                  }
+                }}
+                className="flex items-center w-full text-left focus:outline-none"
+                disabled={goal.completed}
+              >
+                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${goal.completed
+                  ? 'bg-green-500 border-green-500'
                   : 'border-gray-300'
-              }`}>
-                {goal.completed && (
-                  <span className="text-white text-xs font-bold">✓</span>
-                )}
-              </div>
-              <span className={`flex-1 ${
-                goal.completed 
-                  ? 'text-gray-500 line-through' 
+                  }`}>
+                  {goal.completed && (
+                    <span className="text-white text-xs font-bold">✓</span>
+                  )}
+                </div>
+                <span className={`flex-1 ${goal.completed
+                  ? 'text-gray-500 line-through'
                   : 'text-gray-700'
-              }`}>
-                {goal.title}
-              </span>
-            </button>
-          ))}
+                  }`}>
+                  {goal.title}
+                </span>
+              </button>
+            ))}
           </div>
 
           <div className="space-y-2">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${completionPercentage}%` }}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
               ></div>
             </div>
             <p className="text-center text-sm font-medium text-gray-600">
@@ -262,11 +271,10 @@ const Home: React.FC = () => {
                   src={src}
                   onClick={() => handleAnswer('catMood', src)}
                   alt={label}
-                  className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-300 flex-shrink-0 ${
-                    dailyAnswers.catMood === src
-                      ? 'border-indigo-500 scale-105 shadow-md'
-                      : 'border-transparent hover:border-gray-300'
-                  }`}
+                  className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-300 flex-shrink-0 ${dailyAnswers.catMood === src
+                    ? 'border-indigo-500 scale-105 shadow-md'
+                    : 'border-transparent hover:border-gray-300'
+                    }`}
                 />
                 <span className="text-xs text-center text-gray-600">{label}</span>
               </motion.div>
@@ -293,6 +301,7 @@ const Home: React.FC = () => {
           )}
         </motion.div>
 
+        {/* Daily Questions - Sleep Quality */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             ¿Cómo dormiste anoche? 😴
@@ -302,11 +311,10 @@ const Home: React.FC = () => {
               <button
                 key={label}
                 onClick={() => handleAnswer('sleepQuality', label)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  dailyAnswers.sleepQuality === label
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-105'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.sleepQuality === label
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {label}
               </button>
@@ -314,8 +322,9 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Daily Questions - Energy Level */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
             ¿Cuánta energía tienes hoy? ⚡
           </h3>
           <div className="flex justify-center gap-3">
@@ -323,20 +332,93 @@ const Home: React.FC = () => {
               <button
                 key={level}
                 onClick={() => handleAnswer('energyLevel', String(level))}
-                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${
-                  dailyAnswers.energyLevel === String(level)
-                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-110'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${dailyAnswers.energyLevel === String(level)
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-110'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {level}
               </button>
             ))}
           </div>
         </motion.div>
+
+        {/* Daily Questions - Gratitude */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Por qué estás agradecido/a hoy? 🙏
+          </h3>
+          <div className="flex justify-center gap-3 flex-wrap">
+            {['Familia/Amigos', 'Salud', 'Naturaleza', 'Un pequeño logro', 'Otro'].map((label) => (
+              <button
+                key={label}
+                onClick={() => handleAnswer('gratitude', label)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.gratitude === label
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {dailyAnswers.gratitude === 'Otro' && (
+            <input
+              type="text"
+              placeholder="Escribe aquí..."
+              className="mt-4 w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              onBlur={(e) => handleAnswer('gratitude', e.target.value)}
+            />
+          )}
+        </motion.div>
+
+        {/* Daily Questions - Hydration Level */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Cuántos vasos de agua has bebido hoy? 💧
+          </h3>
+          <div className="flex justify-center gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(level => (
+              <button
+                key={level}
+                onClick={() => handleAnswer('hydration', String(level))}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${dailyAnswers.hydration === String(level)
+                  ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white shadow-lg scale-110'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Daily Questions - Social Connection */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Cómo te sentiste conectado/a con los demás hoy? 🤝
+          </h3>
+          <div className="flex justify-center gap-3">
+            {['Nada', 'Poco', 'Normal', 'Excelente'].map((label) => (
+              <button
+                key={label}
+                onClick={() => handleAnswer('socialConnection', label)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.socialConnection === label
+                  ? 'bg-gradient-to-r from-teal-500 to-green-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
       </motion.div>
     </div>
   );
 };
 
 export default Home;
+
+

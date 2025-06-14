@@ -51,6 +51,9 @@ interface WellnessContextType {
   completeGoal: (goalId: string) => void;
   motivationalMessage: string;
   toggleGoalCompleted: (id: string) => void;
+  updatePetHappiness: (happiness: number) => void; // Added for gamification
+  addVirtualCurrency: (amount: number) => void; // Added for gamification
+  virtualCurrency: number; // Added for gamification
 }
 
 const WellnessContext = createContext<WellnessContextType | undefined>(undefined);
@@ -121,16 +124,17 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
   const [motivationalMessage] = useState(
     motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]
   );
+  const [virtualCurrency, setVirtualCurrency] = useState(0); // New state for virtual currency
 
   /**
    * Updates wellness data with new values
    * @param data - Partial wellness data to update
    */
   const updateWellnessData = (data: Partial<WellnessData>) => {
-    setWellnessData(prev => ({ 
-      ...prev, 
-      ...data, 
-      lastUpdated: new Date() 
+    setWellnessData(prev => ({
+      ...prev,
+      ...data,
+      lastUpdated: new Date()
     }));
   };
 
@@ -151,12 +155,12 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
    * @param goalId - ID of the goal to complete
    */
   const completeGoal = (goalId: string) => {
-    setDailyGoals(prev => 
-      prev.map(goal => 
+    setDailyGoals(prev =>
+      prev.map(goal =>
         goal.id === goalId ? { ...goal, completed: true } : goal
       )
     );
-    
+
     // Reward pet when goal is completed
     setPet(prev => ({
       ...prev,
@@ -173,6 +177,16 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // New function to update pet happiness directly
+  const updatePetHappiness = (happiness: number) => {
+    setPet(prev => ({ ...prev, happiness: Math.min(100, happiness) }));
+  };
+
+  // New function to add virtual currency
+  const addVirtualCurrency = (amount: number) => {
+    setVirtualCurrency(prev => prev + amount);
+  };
+
   /**
    * Effect to update pet status over time
    * Pet happiness and health decay if not cared for
@@ -183,7 +197,7 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
         const hoursSinceLastFed = (Date.now() - prev.lastFed.getTime()) / (1000 * 60 * 60);
         const happinessDecay = Math.max(0, prev.happiness - (hoursSinceLastFed * 2));
         const healthDecay = Math.max(0, prev.health - (hoursSinceLastFed * 1));
-        
+
         return {
           ...prev,
           happiness: happinessDecay,
@@ -205,7 +219,10 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
       feedPet,
       completeGoal,
       motivationalMessage,
-      toggleGoalCompleted: toggleGoalCompleted
+      toggleGoalCompleted,
+      updatePetHappiness, // Added to context
+      addVirtualCurrency, // Added to context
+      virtualCurrency // Added to context
     }}>
       {children}
     </WellnessContext.Provider>
@@ -224,3 +241,4 @@ export function useWellness() {
   }
   return context;
 }
+
