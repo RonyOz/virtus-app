@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className="pb-20 md:pb-0 md:ml-64"
+        className="pb-24 md:pb-0 md:ml-64 max-w-screen-xl mx-auto"
       >
         {children}
       </motion.main>
