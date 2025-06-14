@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Brand Colors - Customize these variables to change the app's theme */
 :root {
   /* Primary Brand Colors */
