@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { Heart, Zap, Target, Sparkles, MessageCircle, TrendingUp, Coffee, Moon, Smile } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
 import { motion } from 'framer-motion';
+import { Pet } from '../components/Pet';
 
 /**
  * Home Page Component
  * Modern mobile-first design with cards and animations
  */
 const Home: React.FC = () => {
-  const { pet, dailyGoals, streak, motivationalMessage, wellnessData } = useWellness();
+  const { pet, dailyGoals, streak, motivationalMessage, wellnessData, toggleGoalCompleted, updatePetHappiness, addVirtualCurrency } = useWellness();
 
   const completedGoals = dailyGoals.filter(goal => goal.completed).length;
   const completionPercentage = (completedGoals / dailyGoals.length) * 100;
@@ -17,11 +18,22 @@ const Home: React.FC = () => {
   const [dailyAnswers, setDailyAnswers] = useState({
     catMood: '',
     sleepQuality: '',
-    energyLevel: ''
+    energyLevel: '',
+    gratitude: '',
+    hydration: '',
+    socialConnection: ''
   });
 
   const handleAnswer = (questionKey: string, answer: string) => {
-    setDailyAnswers(prev => ({ ...prev, [questionKey]: answer }));
+    setDailyAnswers(prev => {
+      const newAnswers = { ...prev, [questionKey]: answer };
+      // Gamification: Increase pet happiness and add virtual currency for answering questions
+      if (updatePetHappiness && addVirtualCurrency) {
+        updatePetHappiness(pet.happiness + 1); // Small happiness boost
+        addVirtualCurrency(5); // Add 5 units of virtual currency
+      }
+      return newAnswers;
+    });
   };
 
   /**
@@ -72,7 +84,7 @@ const Home: React.FC = () => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500"></div>
         <div className="absolute inset-0 bg-black/20"></div>
-        
+
         <div className="relative px-4 py-12 safe-area-top">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -152,33 +164,8 @@ const Home: React.FC = () => {
 
         {/* Pet Section */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Tu mascota: {pet.name}</h3>
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-600">
-              Nivel {Math.floor(pet.level)}
-            </span>
-          </div>
+          <Pet pet={pet} getPetEmoji={getPetEmoji} />
 
-          <div className="flex items-center mb-4">
-            <div className="text-4xl mr-4 animate-bounce-slow">{getPetEmoji()}</div>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center">
-                <Heart className="w-4 h-4 text-red-500 mr-2" />
-                <span className="text-sm text-gray-700">Felicidad: {Math.round(pet.happiness)}%</span>
-              </div>
-              <div className="flex items-center">
-                <Zap className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-sm text-gray-700">Salud: {Math.round(pet.health)}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${pet.happiness}%` }}
-            ></div>
-          </div>
         </motion.div>
 
         {/* Daily Goals */}
@@ -195,24 +182,31 @@ const Home: React.FC = () => {
 
           <div className="space-y-3 mb-4">
             {dailyGoals.slice(0, 3).map((goal) => (
-              <div key={goal.id} className="flex items-center">
-                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                  goal.completed 
-                    ? 'bg-green-500 border-green-500' 
-                    : 'border-gray-300'
-                }`}>
+              <button
+                key={goal.id}
+                onClick={() => {
+                  if (!goal.completed && typeof toggleGoalCompleted === 'function') {
+                    toggleGoalCompleted(goal.id);
+                  }
+                }}
+                className="flex items-center w-full text-left focus:outline-none"
+                disabled={goal.completed}
+              >
+                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${goal.completed
+                  ? 'bg-green-500 border-green-500'
+                  : 'border-gray-300'
+                  }`}>
                   {goal.completed && (
                     <span className="text-white text-xs font-bold">✓</span>
                   )}
                 </div>
-                <span className={`flex-1 ${
-                  goal.completed 
-                    ? 'text-gray-500 line-through' 
-                    : 'text-gray-700'
-                }`}>
+                <span className={`flex-1 ${goal.completed
+                  ? 'text-gray-500 line-through'
+                  : 'text-gray-700'
+                  }`}>
                   {goal.title}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -229,33 +223,85 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Daily Questions */}
+        {/* Daily Questions - Improved Cat Mood Picker */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            ¿Qué gato te sientes hoy? 🐱
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
+            ¿Qué gato eres hoy? 🐾
           </h3>
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <p className="text-sm text-gray-500 mb-4 text-center">
+            Elige tu estado de ánimo según el gato que más te representa.
+          </p>
+          <div className="flex gap-3 overflow-x-auto p-2 px-1 justify-center">
             {[
-              'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg',
-              'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg',
-              'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg',
-              'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg',
-              'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg'
-            ].map((src, i) => (
-              <img
+              {
+                src: 'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg',
+                label: 'Tieso',
+                msg: 'A veces el día necesita un cambio 🌀'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg',
+                label: 'Traumado',
+                msg: 'Animo Animo Animo 💪'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg',
+                label: 'Cansao',
+                msg: 'Descansar también es avanzar 🌙'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg',
+                label: 'Todo bien',
+                msg: 'Día tranquilo y feliz ☀️'
+              },
+              {
+                src: 'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg',
+                label: 'Colapso',
+                msg: 'Respira... estás haciendo lo mejor que puedes 🌬️'
+              }
+            ].map(({ src, label, msg }, i) => (
+              <motion.div
                 key={i}
-                src={src}
-                onClick={() => handleAnswer('catMood', src)}
-                className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-200 flex-shrink-0 ${
-                  dailyAnswers.catMood === src 
-                    ? 'border-indigo-500 scale-105 shadow-lg' 
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="flex flex-col items-center gap-1"
+              >
+                <img
+                  src={src}
+                  onClick={() => handleAnswer('catMood', src)}
+                  alt={label}
+                  className={`w-20 h-20 object-cover rounded-xl border-2 cursor-pointer transition-all duration-300 flex-shrink-0 ${dailyAnswers.catMood === src
+                    ? 'border-indigo-500 scale-105 shadow-md'
                     : 'border-transparent hover:border-gray-300'
-                }`}
-              />
+                    }`}
+                />
+                <span className="text-xs text-center text-gray-600">{label}</span>
+              </motion.div>
             ))}
           </div>
+
+          {dailyAnswers.catMood && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 bg-indigo-50 rounded-xl px-4 py-3 text-center text-sm text-indigo-700 font-medium"
+            >
+              {
+                {
+                  'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg': 'A veces el día necesita un cambio 🌀',
+                  'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg': 'Animo Animo Animo 💪',
+                  'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg': 'Descansar también es avanzar 🌙',
+                  'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg': 'Día tranquilo y feliz ☀️',
+                  'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg': 'Respira... estás haciendo lo mejor que puedes 🌬️'
+                }[dailyAnswers.catMood]
+              }
+            </motion.div>
+          )}
         </motion.div>
 
+        {/* Daily Questions - Sleep Quality */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             ¿Cómo dormiste anoche? 😴
@@ -265,11 +311,10 @@ const Home: React.FC = () => {
               <button
                 key={label}
                 onClick={() => handleAnswer('sleepQuality', label)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  dailyAnswers.sleepQuality === label
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-105'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.sleepQuality === label
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {label}
               </button>
@@ -277,6 +322,7 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Daily Questions - Energy Level */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             ¿Cuánta energía tienes hoy? ⚡
@@ -286,20 +332,93 @@ const Home: React.FC = () => {
               <button
                 key={level}
                 onClick={() => handleAnswer('energyLevel', String(level))}
-                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${
-                  dailyAnswers.energyLevel === String(level)
-                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-110'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${dailyAnswers.energyLevel === String(level)
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-110'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {level}
               </button>
             ))}
           </div>
         </motion.div>
+
+        {/* Daily Questions - Gratitude */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Por qué estás agradecido/a hoy? 🙏
+          </h3>
+          <div className="flex justify-center gap-3 flex-wrap">
+            {['Familia/Amigos', 'Salud', 'Naturaleza', 'Un pequeño logro', 'Otro'].map((label) => (
+              <button
+                key={label}
+                onClick={() => handleAnswer('gratitude', label)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.gratitude === label
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {dailyAnswers.gratitude === 'Otro' && (
+            <input
+              type="text"
+              placeholder="Escribe aquí..."
+              className="mt-4 w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              onBlur={(e) => handleAnswer('gratitude', e.target.value)}
+            />
+          )}
+        </motion.div>
+
+        {/* Daily Questions - Hydration Level */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Cuántos vasos de agua has bebido hoy? 💧
+          </h3>
+          <div className="flex justify-center gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(level => (
+              <button
+                key={level}
+                onClick={() => handleAnswer('hydration', String(level))}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-200 ${dailyAnswers.hydration === String(level)
+                  ? 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white shadow-lg scale-110'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Daily Questions - Social Connection */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+            ¿Cómo te sentiste conectado/a con los demás hoy? 🤝
+          </h3>
+          <div className="flex justify-center gap-3">
+            {['Nada', 'Poco', 'Normal', 'Excelente'].map((label) => (
+              <button
+                key={label}
+                onClick={() => handleAnswer('socialConnection', label)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.socialConnection === label
+                  ? 'bg-gradient-to-r from-teal-500 to-green-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
       </motion.div>
     </div>
   );
 };
 
 export default Home;
+
+

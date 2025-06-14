@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import { Heart, Zap, Shield, Moon, Droplets, Brain, TrendingUp, Calendar, Music, Plus } from 'lucide-react';
+import { Heart, Zap, Shield, Moon, Droplets, Brain, TrendingUp, Calendar, Music, Plus, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
 import { motion } from 'framer-motion';
+import { WellnessData, WeeklyTrend, MetricInsight, WellnessGoal } from '../types/wellness';
+import { currentWellnessData, weeklyTrends, metricInsights, wellnessGoals } from '../data/mockWellnessData';
+import LineChart from '../components/charts/LineChart';
+import RadarChart from '../components/charts/RadarChart';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface WellnessMetric {
   key: keyof WellnessData;
@@ -19,6 +25,7 @@ interface WellnessMetric {
 const Dashboard: React.FC = () => {
   const { wellnessData, updateWellnessData } = useWellness();
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  const [selectedTrend, setSelectedTrend] = useState<WeeklyTrend | null>(null);
 
   const metrics: WellnessMetric[] = [
     {
@@ -86,6 +93,17 @@ const Dashboard: React.FC = () => {
     const negativeMetrics = (wellnessData.stress + wellnessData.anxiety) / 2;
     const overall = (positiveMetrics + (10 - negativeMetrics)) / 2;
     return Math.round(overall * 10) / 10;
+  };
+
+  const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
+    switch (trend) {
+      case 'up':
+        return <ArrowUp className="w-4 h-4 text-green-500" />;
+      case 'down':
+        return <ArrowDown className="w-4 h-4 text-red-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-gray-500" />;
+    }
   };
 
   /**
@@ -204,7 +222,7 @@ const Dashboard: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="px-4 -mt-6 pb-8 space-y-6"
+        className="px-3 sm:px-4 -mt-6 pb-8 space-y-4 sm:space-y-6"
       >
         {/* Recommendation Card */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl mt-8 p-6 shadow-lg">
@@ -220,124 +238,137 @@ const Dashboard: React.FC = () => {
           </button>
         </motion.div>
 
-        {/* Metrics Grid */}
-        <motion.div variants={itemVariants}>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Estado actual</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {metrics.map((metric) => {
-              const value = wellnessData[metric.key];
-              const maxValue = metric.key === 'water' ? 8 : 10;
-              const level = getMetricLevel(value, maxValue);
-              const isSelected = selectedMetric === metric.key;
-              
-              return (
-                <motion.div
-                  key={metric.key}
-                  variants={itemVariants}
-                  className={`bg-white rounded-2xl p-6 shadow-lg cursor-pointer transition-all duration-300 ${
-                    isSelected ? 'ring-2 ring-indigo-500 shadow-xl' : 'hover:shadow-xl hover:-translate-y-1'
-                  }`}
-                  onClick={() => setSelectedMetric(isSelected ? null : metric.key)}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className={`${metric.color} mr-3`}>
-                        {metric.icon}
-                      </div>
-                      <span className="font-semibold text-gray-800">{metric.label}</span>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${level.color} bg-gray-100`}>
-                      {level.level}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-end justify-between mb-3">
-                    <span className="text-2xl font-bold text-gray-800">
-                      {value}{metric.unit && ` ${metric.unit}`}
-                    </span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${metric.gradient} rounded-full transition-all duration-500`}
-                      style={{ width: `${(value / maxValue) * 100}%` }}
-                    />
-                  </div>
+        {/* Insights Grid */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {metricInsights.map((insight, index) => (
+            <div
+              key={index}
+              className={`bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg ${
+                insight.type === 'positive' ? 'border-l-4 border-green-500' :
+                insight.type === 'negative' ? 'border-l-4 border-red-500' :
+                'border-l-4 border-blue-500'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xl sm:text-2xl">{insight.icon}</span>
+                <span className={`text-xs sm:text-sm font-medium ${
+                  insight.change > 0 ? 'text-green-500' :
+                  insight.change < 0 ? 'text-red-500' :
+                  'text-blue-500'
+                }`}>
+                  {insight.change > 0 ? '+' : ''}{insight.change}%
+                </span>
+              </div>
+              <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-1">{insight.title}</h3>
+              <p className="text-xs sm:text-sm text-gray-600">{insight.description}</p>
+            </div>
+          ))}
+        </motion.div>
 
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="border-t border-gray-200 pt-4"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        {Array.from({ length: maxValue }, (_, i) => (
-                          <button
-                            key={i}
-                            className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              (i + 1) <= value 
-                                ? `bg-gradient-to-r ${metric.gradient} border-transparent` 
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateMetric(metric.key, i + 1);
-                            }}
-                          >
-                            <span className={`text-xs font-bold ${
-                              (i + 1) <= value ? 'text-white' : 'text-gray-400'
-                            }`}>
-                              {i + 1}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
+        {/* Radar Chart */}
+        <motion.div variants={itemVariants} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Estado General</h2>
+          <div className="h-[300px] sm:h-[400px]">
+            <RadarChart data={currentWellnessData} />
           </div>
         </motion.div>
 
         {/* Weekly Trends */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center mb-4">
-            <Calendar className="w-5 h-5 text-gray-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-800">Tendencias de la semana</h3>
+        <motion.div variants={itemVariants} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-0">Tendencias Semanales</h2>
+            <div className="flex flex-wrap gap-2">
+              {metrics.map(metric => (
+                <button
+                  key={metric.key}
+                  onClick={() => {
+                    const trend = weeklyTrends.find(t => t.metric === metric.key);
+                    setSelectedTrend(trend || null);
+                  }}
+                  className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
+                    selectedTrend?.metric === metric.key
+                      ? `bg-gradient-to-r ${metric.gradient} text-white`
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {metric.label}
+                </button>
+              ))}
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-600">Estado de ánimo promedio</span>
-              <span className="font-semibold text-gray-800">7.2/10 📈</span>
+          {selectedTrend && (
+            <div className="h-[250px] sm:h-[300px]">
+              <LineChart
+                data={selectedTrend.data}
+                color={metrics.find(m => m.key === selectedTrend.metric)?.gradient.split(' ')[1] || '#000'}
+                title={metrics.find(m => m.key === selectedTrend.metric)?.label || ''}
+              />
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-600">Mejor día de la semana</span>
-              <span className="font-semibold text-gray-800">Sábado 🌟</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-600">Área de mejora</span>
-              <span className="font-semibold text-gray-800">Hidratación 💧</span>
-            </div>
-          </div>
+          )}
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Acciones rápidas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transition-all duration-300">
-              <Music className="w-5 h-5 mr-2" />
-              <span>Música relajante</span>
-            </button>
-            <button className="flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 px-4 rounded-xl font-medium hover:shadow-lg transition-all duration-300">
-              <Brain className="w-5 h-5 mr-2" />
-              <span>Meditación 5 min</span>
+        {/* Goals Progress */}
+        <motion.div variants={itemVariants} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-0">Objetivos de Bienestar</h2>
+            <button className="flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-300 text-sm sm:text-base">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Objetivo
             </button>
           </div>
+          
+          <div className="space-y-3 sm:space-y-4">
+            {wellnessGoals.map(goal => {
+              const metric = metrics.find(m => m.key === goal.category);
+              const progress = (goal.current / goal.target) * 100;
+              
+              return (
+                <div key={goal.id} className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                    <div className="flex items-center mb-2 sm:mb-0">
+                      <div className={`w-8 h-8 bg-gradient-to-r ${metric?.gradient} rounded-lg flex items-center justify-center mr-3`}>
+                        {metric?.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-800 text-sm sm:text-base">{goal.title}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500">
+                          Meta: {goal.target} {goal.unit}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-xs sm:text-sm font-medium px-2 py-1 rounded-full ${
+                      goal.status === 'on-track' ? 'bg-green-100 text-green-700' :
+                      goal.status === 'at-risk' ? 'bg-red-100 text-red-700' :
+                      'bg-blue-100 text-blue-700'
+                    }`}>
+                      {goal.status === 'on-track' ? 'En progreso' :
+                       goal.status === 'at-risk' ? 'En riesgo' :
+                       'Completado'}
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mb-2">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        goal.status === 'on-track' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+                        goal.status === 'at-risk' ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                        'bg-gradient-to-r from-blue-400 to-blue-500'
+                      }`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:justify-between text-xs sm:text-sm text-gray-500">
+                    <span>Progreso: {Math.round(progress)}%</span>
+                    <span className="mt-1 sm:mt-0">Fecha límite: {format(new Date(goal.deadline), 'dd MMM yyyy', { locale: es })}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </motion.div>
+        
       </motion.div>
     </div>
   );
