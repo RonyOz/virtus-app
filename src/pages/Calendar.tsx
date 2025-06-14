@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, AlertTriangle, BookOpen, Coffee, Users, Brain } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
+import { motion } from 'framer-motion';
 
 interface CalendarEvent {
   id: string;
@@ -21,7 +22,7 @@ interface WeekDay {
 
 /**
  * Calendar Page Component
- * Intelligent calendar with mental load prediction and wellness recommendations
+ * Modern calendar with mental load prediction
  */
 const Calendar: React.FC = () => {
   const { wellnessData } = useWellness();
@@ -131,33 +132,33 @@ const Calendar: React.FC = () => {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'academic':
-        return <BookOpen size={16} color="var(--color-primary)" />;
+        return <BookOpen className="w-4 h-4 text-blue-600" />;
       case 'wellness':
-        return <Brain size={16} color="var(--color-success)" />;
+        return <Brain className="w-4 h-4 text-green-600" />;
       case 'social':
-        return <Users size={16} color="var(--color-warning)" />;
+        return <Users className="w-4 h-4 text-yellow-600" />;
       case 'warning':
-        return <AlertTriangle size={16} color="var(--color-error)" />;
+        return <AlertTriangle className="w-4 h-4 text-red-600" />;
       default:
-        return <CalendarIcon size={16} color="var(--color-gray-500)" />;
+        return <CalendarIcon className="w-4 h-4 text-gray-500" />;
     }
   };
 
   /**
-   * Get background color for event type
+   * Get background gradient for event type
    */
-  const getEventColor = (type: string) => {
+  const getEventGradient = (type: string) => {
     switch (type) {
       case 'academic':
-        return 'var(--color-primary-light)';
+        return 'from-blue-50 to-indigo-50 border-blue-200';
       case 'wellness':
-        return 'var(--color-secondary-light)';
+        return 'from-green-50 to-emerald-50 border-green-200';
       case 'social':
-        return 'var(--color-accent-light)';
+        return 'from-yellow-50 to-orange-50 border-yellow-200';
       case 'warning':
-        return '#FEE2E2';
+        return 'from-red-50 to-pink-50 border-red-200';
       default:
-        return 'var(--bg-tertiary)';
+        return 'from-gray-50 to-slate-50 border-gray-200';
     }
   };
 
@@ -165,9 +166,9 @@ const Calendar: React.FC = () => {
    * Get color for mental load indicator
    */
   const getMentalLoadColor = (load: number) => {
-    if (load >= 7) return 'var(--color-error)';
-    if (load >= 5) return 'var(--color-warning)';
-    return 'var(--color-success)';
+    if (load >= 7) return 'from-red-400 to-red-500';
+    if (load >= 5) return 'from-yellow-400 to-orange-500';
+    return 'from-green-400 to-emerald-500';
   };
 
   /**
@@ -182,7 +183,8 @@ const Calendar: React.FC = () => {
       return {
         title: '🧘 Recomendación de bienestar',
         message: 'Tienes un día académicamente intenso. Te sugerimos incluir momentos de respiración profunda entre actividades.',
-        action: 'Programar descansos'
+        action: 'Programar descansos',
+        gradient: 'from-purple-400 to-indigo-500'
       };
     }
     
@@ -190,14 +192,16 @@ const Calendar: React.FC = () => {
       return {
         title: '💚 Apoyo emocional',
         message: 'Tu estado de ánimo está bajo. ¿Qué te parece programar una actividad que disfrutes?',
-        action: 'Agregar actividad placentera'
+        action: 'Agregar actividad placentera',
+        gradient: 'from-green-400 to-emerald-500'
       };
     }
     
     return {
       title: '🌟 Optimización del día',
       message: 'Tu día se ve equilibrado. ¡Mantén ese balance entre productividad y bienestar!',
-      action: 'Ver más sugerencias'
+      action: 'Ver más sugerencias',
+      gradient: 'from-blue-400 to-indigo-500'
     };
   };
 
@@ -241,86 +245,88 @@ const Calendar: React.FC = () => {
 
 
   return (
-    <div className="calendar-container">
-    {showModal && (
-      <div className="modal-overlay">
-        <div className="modal">
-          <h3>Agregar nuevo evento</h3>
-          <input
-            type="text"
-            placeholder="Título"
-            value={newEvent.title}
-            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-          />
-          <input
-            type="time"
-            value={newEvent.time}
-            onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-          />
-          <select
-            value={newEvent.type}
-            onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value as CalendarEvent['type'] })}
-          >
-            <option value="academic">Académico</option>
-            <option value="wellness">Bienestar</option>
-            <option value="social">Social</option>
-          </select>
-          <button onClick={handleAddEvent}>Guardar</button>
-          <button onClick={closeAddModal}>Cancelar</button>
-        </div>
-      </div>
-    )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="calendar-header">
-        <CalendarIcon size={24} color="var(--color-primary)" />
-        <h1>Calendario Inteligente</h1>
-        <button className="add-button" onClick={openAddModal}>
-          <Plus size={20} color="var(--color-primary)" />
-        </button>
-      </div>
-
-      <div className="calendar-content">
-        {/* Week View */}
-        <div className="week-container">
-          <h2 className="section-title">Esta semana</h2>
-          <div className="week-scroll">
-            <div className="week-days">
-              {weekDays.map((day) => (
-                <button
-                  key={day.date}
-                  className={`day-card ${day.isToday ? 'today' : ''} ${selectedDate === day.date ? 'selected' : ''}`}
-                  onClick={() => setSelectedDate(day.date)}
-                >
-                  <span className="day-name">{day.day}</span>
-                  <span className="day-date">{new Date(day.date).getDate()}</span>
-                  
-                  <div className="mental-load-container">
-                    <div 
-                      className="mental-load-dot"
-                      style={{ backgroundColor: getMentalLoadColor(day.mentalLoad) }}
-                    />
-                    <span className="mental-load-text">
-                      {day.mentalLoad >= 7 ? 'Alta' : day.mentalLoad >= 5 ? 'Media' : 'Baja'}
-                    </span>
-                  </div>
-                </button>
-              ))}
+      <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 px-4 py-4 safe-area-top">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+              <CalendarIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-800">Calendario Inteligente</h1>
+              <p className="text-sm text-gray-600">Planifica tu bienestar</p>
             </div>
           </div>
-        </div>
-
-        {/* AI Recommendation */}
-        <div className="recommendation-card card">
-          <h3>{recommendation.title}</h3>
-          <p>{recommendation.message}</p>
-          <button className="btn btn-primary">
-            {recommendation.action}
+          <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <Plus className="w-5 h-5 text-gray-600" />
           </button>
         </div>
+      </div>
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="px-4 py-6 space-y-6"
+      >
+        {/* Week View */}
+        <motion.div variants={itemVariants}>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Esta semana</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {weekDays.map((day) => (
+              <button
+                key={day.date}
+                className={`flex-shrink-0 bg-white rounded-2xl p-4 min-w-[80px] text-center transition-all duration-300 ${
+                  day.isToday 
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' 
+                    : selectedDate === day.date 
+                      ? 'bg-gradient-to-r from-indigo-400 to-purple-500 text-white shadow-md' 
+                      : 'hover:shadow-md hover:-translate-y-1'
+                }`}
+                onClick={() => setSelectedDate(day.date)}
+              >
+                <span className={`text-xs font-medium block mb-1 ${
+                  day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-500'
+                }`}>
+                  {day.day}
+                </span>
+                <span className={`text-xl font-bold block mb-2 ${
+                  day.isToday || selectedDate === day.date ? 'text-white' : 'text-gray-800'
+                }`}>
+                  {new Date(day.date).getDate()}
+                </span>
+                
+                <div className="flex flex-col items-center">
+                  <div className={`w-2 h-2 rounded-full mb-1 bg-gradient-to-r ${getMentalLoadColor(day.mentalLoad)}`} />
+                  <span className={`text-xs font-medium ${
+                    day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-600'
+                  }`}>
+                    {day.mentalLoad >= 7 ? 'Alta' : day.mentalLoad >= 5 ? 'Media' : 'Baja'}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* AI Recommendation */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center mb-4">
+            <div className={`w-10 h-10 bg-gradient-to-r ${recommendation.gradient} rounded-xl flex items-center justify-center mr-3`}>
+              <Brain className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800">{recommendation.title}</h3>
+          </div>
+          <p className="text-gray-600 mb-4 leading-relaxed">{recommendation.message}</p>
+          <button className={`w-full bg-gradient-to-r ${recommendation.gradient} text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300`}>
+            {recommendation.action}
+          </button>
+        </motion.div>
 
         {/* Events for Selected Date */}
-        <div className="events-container">
-          <h2 className="section-title">
+        <motion.div variants={itemVariants}>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
             Eventos del día ({new Date(selectedDate).toLocaleDateString('es-ES', { 
               weekday: 'long', 
               day: 'numeric', 
@@ -329,407 +335,81 @@ const Calendar: React.FC = () => {
           </h2>
           
           {getEventsForDate(selectedDate).length === 0 ? (
-            <div className="no-events-container card">
-              <p>No hay eventos programados</p>
-              <button className="add-event-button" onClick={openAddModal}>
-                <Plus size={16} color="var(--color-primary)" />
-                <span>Agregar evento</span>
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CalendarIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-600 mb-4">No hay eventos programados</p>
+              <button className="inline-flex items-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300">
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar evento
               </button>
             </div>
           ) : (
-            <div className="events-list">
+            <div className="space-y-4">
               {getEventsForDate(selectedDate).map((event) => (
-                <div
+                <motion.div
                   key={event.id}
-                  className="event-card card"
-                  style={{ backgroundColor: getEventColor(event.type) }}
+                  variants={itemVariants}
+                  className={`bg-gradient-to-r ${getEventGradient(event.type)} rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
                 >
-                  <div className="event-header">
-                    {getEventIcon(event.type)}
-                    <span className="event-time">{event.time}</span>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      {getEventIcon(event.type)}
+                      <span className="ml-2 text-sm font-medium text-gray-600">{event.time}</span>
+                    </div>
                     {event.stress_level && (
-                      <div className="stress-indicator">
-                        <span>Estrés: {event.stress_level}/10</span>
+                      <div className="bg-red-100 px-2 py-1 rounded-full">
+                        <span className="text-xs font-medium text-red-700">
+                          Estrés: {event.stress_level}/10
+                        </span>
                       </div>
                     )}
                   </div>
                   
-                  <h4 className="event-title">{event.title}</h4>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h4>
                   
                   {event.description && (
-                    <p className="event-description">{event.description}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{event.description}</p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Mental Load Prediction */}
-        <div className="prediction-card card">
-          <h3>📊 Predicción de carga mental</h3>
-          <div className="prediction-content">
-            <div className="prediction-item">
-              <span className="prediction-label">Mañana</span>
-              <div className="prediction-bar">
-                <div 
-                  className="prediction-fill" 
-                  style={{ width: '80%', backgroundColor: 'var(--color-warning)' }}
-                />
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Predicción de carga mental</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600 font-medium">Mañana</span>
+              <div className="flex items-center flex-1 mx-4">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full w-4/5" />
+                </div>
               </div>
-              <span className="prediction-value">Alta</span>
+              <span className="text-sm font-semibold text-orange-600">Alta</span>
             </div>
             
-            <div className="prediction-item">
-              <span className="prediction-label">Pasado mañana</span>
-              <div className="prediction-bar">
-                <div 
-                  className="prediction-fill" 
-                  style={{ width: '40%', backgroundColor: 'var(--color-success)' }}
-                />
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600 font-medium">Pasado mañana</span>
+              <div className="flex items-center flex-1 mx-4">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full w-2/5" />
+                </div>
               </div>
-              <span className="prediction-value">Baja</span>
+              <span className="text-sm font-semibold text-green-600">Baja</span>
             </div>
           </div>
           
-          <p className="prediction-note">
-            💡 Sugerencia: Programa actividades de autocuidado después de días intensos.
-          </p>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .calendar-container {
-          min-height: 100vh;
-          background: var(--bg-secondary);
-        }
-
-        .calendar-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--spacing-6);
-          background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .calendar-header h1 {
-          font-size: var(--font-size-xl);
-          font-weight: 600;
-          color: var(--text-primary);
-          flex: 1;
-          margin-left: var(--spacing-3);
-        }
-
-        .add-button {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: var(--bg-tertiary);
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: background-color var(--transition-fast);
-        }
-
-        .add-button:hover {
-          background: var(--color-gray-300);
-        }
-
-        .calendar-content {
-          padding: var(--spacing-6);
-          max-width: 1000px;
-          margin: 0 auto;
-        }
-
-        .week-container {
-          margin-bottom: var(--spacing-6);
-        }
-
-        .section-title {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-4);
-        }
-
-        .week-scroll {
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .week-days {
-          display: flex;
-          gap: var(--spacing-3);
-          min-width: max-content;
-          padding-bottom: var(--spacing-2);
-        }
-
-        .day-card {
-          background: var(--bg-primary);
-          border: none;
-          border-radius: var(--radius-lg);
-          padding: var(--spacing-3);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 80px;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .day-card:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-        }
-
-        .day-card.today {
-          background: var(--color-primary);
-          color: var(--text-inverse);
-        }
-
-        .day-card.selected {
-          background: var(--color-primary-dark);
-          color: var(--text-inverse);
-        }
-
-        .day-name {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          margin-bottom: var(--spacing-1);
-        }
-
-        .day-card.today .day-name,
-        .day-card.selected .day-name {
-          color: var(--text-inverse);
-        }
-
-        .day-date {
-          font-size: var(--font-size-xl);
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-2);
-        }
-
-        .day-card.today .day-date,
-        .day-card.selected .day-date {
-          color: var(--text-inverse);
-        }
-
-        .mental-load-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .mental-load-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          margin-bottom: var(--spacing-1);
-        }
-
-        .mental-load-text {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-          color: var(--text-secondary);
-        }
-
-        .day-card.today .mental-load-text,
-        .day-card.selected .mental-load-text {
-          color: var(--text-inverse);
-        }
-
-        .recommendation-card {
-          margin-bottom: var(--spacing-6);
-        }
-
-        .recommendation-card h3 {
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-2);
-        }
-
-        .recommendation-card p {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          line-height: 1.5;
-          margin-bottom: var(--spacing-4);
-        }
-
-        .events-container {
-          margin-bottom: var(--spacing-6);
-        }
-
-        .no-events-container {
-          text-align: center;
-          padding: var(--spacing-6);
-        }
-
-        .no-events-container p {
-          font-size: var(--font-size-base);
-          color: var(--text-secondary);
-          margin-bottom: var(--spacing-4);
-        }
-
-        .add-event-button {
-          display: inline-flex;
-          align-items: center;
-          background: var(--bg-tertiary);
-          border: none;
-          padding: var(--spacing-2) var(--spacing-4);
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          transition: background-color var(--transition-fast);
-          gap: var(--spacing-2);
-        }
-
-        .add-event-button:hover {
-          background: var(--color-gray-300);
-        }
-
-        .add-event-button span {
-          font-size: var(--font-size-sm);
-          font-weight: 500;
-          color: var(--color-primary);
-        }
-
-        .events-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-3);
-        }
-
-        .event-card {
-          cursor: pointer;
-          transition: transform var(--transition-fast);
-        }
-
-        .event-card:hover {
-          transform: translateY(-1px);
-        }
-
-        .event-header {
-          display: flex;
-          align-items: center;
-          margin-bottom: var(--spacing-2);
-          gap: var(--spacing-2);
-        }
-
-        .event-time {
-          font-size: var(--font-size-sm);
-          font-weight: 600;
-          color: var(--text-primary);
-          flex: 1;
-        }
-
-        .stress-indicator {
-          background: rgba(239, 68, 68, 0.1);
-          padding: var(--spacing-1) var(--spacing-2);
-          border-radius: var(--radius-md);
-        }
-
-        .stress-indicator span {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-          color: var(--color-error);
-        }
-
-        .event-title {
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-1);
-        }
-
-        .event-description {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          line-height: 1.4;
-        }
-
-        .prediction-card h3 {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-4);
-        }
-
-        .prediction-content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-4);
-          margin-bottom: var(--spacing-4);
-        }
-
-        .prediction-item {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-3);
-        }
-
-        .prediction-label {
-          font-size: var(--font-size-sm);
-          font-weight: 500;
-          color: var(--text-primary);
-          width: 100px;
-          flex-shrink: 0;
-        }
-
-        .prediction-bar {
-          flex: 1;
-          height: 8px;
-          background: var(--color-gray-200);
-          border-radius: var(--radius-sm);
-          overflow: hidden;
-        }
-
-        .prediction-fill {
-          height: 100%;
-          border-radius: var(--radius-sm);
-          transition: width var(--transition-normal);
-        }
-
-        .prediction-value {
-          font-size: var(--font-size-sm);
-          font-weight: 600;
-          color: var(--text-primary);
-          width: 50px;
-          text-align: right;
-          flex-shrink: 0;
-        }
-
-        .prediction-note {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          line-height: 1.5;
-          font-style: italic;
-        }
-
-        @media (max-width: 768px) {
-          .calendar-content {
-            padding: var(--spacing-4);
-          }
-
-          .prediction-item {
-            flex-direction: column;
-            align-items: stretch;
-            gap: var(--spacing-2);
-          }
-
-          .prediction-label,
-          .prediction-value {
-            width: auto;
-            text-align: left;
-          }
-        }
-      `}</style>
+          <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-sm text-blue-800 leading-relaxed">
+              💡 <strong>Sugerencia:</strong> Programa actividades de autocuidado después de días intensos.
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
