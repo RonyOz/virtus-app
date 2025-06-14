@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Heart, MessageSquare, Plus, Shield, Coffee, Brain, Moon, BookOpen, Smile } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface CommunityPost {
   id: string;
@@ -19,12 +20,13 @@ interface Interest {
   name: string;
   icon: React.ReactNode;
   color: string;
+  gradient: string;
   members: number;
 }
 
 /**
  * Community Page Component
- * Anonymous community platform with AI moderation
+ * Modern anonymous community platform
  */
 const Community: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('general');
@@ -34,44 +36,50 @@ const Community: React.FC = () => {
   const interests: Interest[] = [
     {
       id: 'alimentacion',
-      name: 'Alimentación Saludable',
-      icon: <Coffee size={20} color="var(--color-warning)" />,
-      color: 'var(--color-warning)',
+      name: 'Alimentación',
+      icon: <Coffee className="w-5 h-5" />,
+      color: 'text-yellow-600',
+      gradient: 'from-yellow-400 to-orange-500',
       members: 234
     },
     {
       id: 'sueño',
-      name: 'Mejor Descanso',
-      icon: <Moon size={20} color="#1E40AF" />,
-      color: '#1E40AF',
+      name: 'Descanso',
+      icon: <Moon className="w-5 h-5" />,
+      color: 'text-blue-600',
+      gradient: 'from-blue-400 to-indigo-500',
       members: 189
     },
     {
       id: 'concentracion',
       name: 'Concentración',
-      icon: <Brain size={20} color="#8B5CF6" />,
-      color: '#8B5CF6',
+      icon: <Brain className="w-5 h-5" />,
+      color: 'text-purple-600',
+      gradient: 'from-purple-400 to-indigo-500',
       members: 156
     },
     {
       id: 'motivacion',
       name: 'Motivación',
-      icon: <Smile size={20} color="var(--color-success)" />,
-      color: 'var(--color-success)',
+      icon: <Smile className="w-5 h-5" />,
+      color: 'text-green-600',
+      gradient: 'from-green-400 to-emerald-500',
       members: 312
     },
     {
       id: 'ansiedad',
-      name: 'Manejo de Ansiedad',
-      icon: <Heart size={20} color="var(--color-error)" />,
-      color: 'var(--color-error)',
+      name: 'Ansiedad',
+      icon: <Heart className="w-5 h-5" />,
+      color: 'text-red-600',
+      gradient: 'from-red-400 to-pink-500',
       members: 98
     },
     {
       id: 'general',
       name: 'General',
-      icon: <Users size={20} color="var(--color-gray-500)" />,
-      color: 'var(--color-gray-500)',
+      icon: <Users className="w-5 h-5" />,
+      color: 'text-gray-600',
+      gradient: 'from-gray-400 to-slate-500',
       members: 445
     }
   ];
@@ -140,19 +148,10 @@ const Community: React.FC = () => {
   ];
 
   /**
-   * Get icon for category
+   * Get interest data for category
    */
-  const getCategoryIcon = (category: string) => {
-    const interest = interests.find(i => i.id === category);
-    return interest?.icon || <Users size={16} color="var(--color-gray-500)" />;
-  };
-
-  /**
-   * Get color for category
-   */
-  const getCategoryColor = (category: string) => {
-    const interest = interests.find(i => i.id === category);
-    return interest?.color || 'var(--color-gray-500)';
+  const getInterestData = (category: string) => {
+    return interests.find(i => i.id === category) || interests[interests.length - 1];
   };
 
   /**
@@ -205,523 +204,212 @@ const Community: React.FC = () => {
     alert('✨ IA Moderando\n\nTu mensaje está siendo revisado para asegurar que sea positivo y útil para la comunidad. Se publicará en breve.');
   };
 
-  // Update getFilteredPosts to use posts state
   const getFilteredPosts = () => {
     if (selectedCategory === 'general') return posts;
     return posts.filter(post => post.category === selectedCategory);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
+  };
+
   return (
-    <div className="community-container">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="community-header">
-        <Users size={24} color="var(--color-primary)" />
-        <div className="header-text">
-          <h1>Comunidad de Apoyo</h1>
-          <p>Comparte y recibe consejos anónimos</p>
+      <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 px-4 py-4 safe-area-top">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+              <Users className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-800">Comunidad de Apoyo</h1>
+              <p className="text-sm text-gray-600">Comparte y recibe consejos anónimos</p>
+            </div>
+          </div>
+          <button
+            className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center hover:shadow-lg transition-all duration-300"
+            onClick={() => setShowNewPost(!showNewPost)}
+          >
+            <Plus className="w-5 h-5 text-white" />
+          </button>
         </div>
-        <button
-          className="add-button"
-          onClick={() => setShowNewPost(!showNewPost)}
-        >
-          <Plus size={20} color="var(--color-primary)" />
-        </button>
       </div>
 
-      <div className="community-content">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="px-4 py-6 space-y-6"
+      >
         {/* New Post Form */}
         {showNewPost && (
-          <div className="new-post-container card">
-            <h3>Comparte tu consejo anónimo</h3>
+          <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Comparte tu consejo anónimo</h3>
             <textarea
-              className="new-post-input"
+              className="w-full bg-gray-50 rounded-xl p-4 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
               placeholder="¿Qué estrategia te ha funcionado? Comparte tu experiencia para ayudar a otros estudiantes..."
               rows={4}
             />
-            <div className="new-post-actions">
+            <div className="flex justify-between items-center mt-4">
               <button
-                className="cancel-button"
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                 onClick={() => setShowNewPost(false)}
               >
                 Cancelar
               </button>
               <button
-                className={`submit-button ${!newPostContent.trim() ? 'disabled' : ''}`}
+                className={`flex items-center px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                  newPostContent.trim()
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-lg'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
                 onClick={submitPost}
                 disabled={!newPostContent.trim()}
               >
-                <Shield size={16} />
-                <span>Enviar (IA Modera)</span>
+                <Shield className="w-4 h-4 mr-2" />
+                Enviar (IA Modera)
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Categories */}
-        <div className="categories-container">
-          <div className="categories-scroll">
-            <div className="categories">
-              {interests.map((interest) => (
-                <button
-                  key={interest.id}
-                  className={`category-button ${selectedCategory === interest.id ? 'active' : ''}`}
-                  style={{
-                    backgroundColor: selectedCategory === interest.id ? interest.color : 'var(--bg-tertiary)',
-                    color: selectedCategory === interest.id ? 'var(--text-inverse)' : 'var(--text-primary)'
-                  }}
-                  onClick={() => setSelectedCategory(interest.id)}
-                >
-                  <div className="category-content">
-                    {React.cloneElement(interest.icon as React.ReactElement, {
-                      color: selectedCategory === interest.id ? 'var(--text-inverse)' : interest.color
-                    })}
-                    <span>{interest.name}</span>
-                  </div>
-                  <span className="category-members">
-                    {interest.members}
-                  </span>
-                </button>
-              ))}
-            </div>
+        <motion.div variants={itemVariants}>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {interests.map((interest) => (
+              <button
+                key={interest.id}
+                className={`flex-shrink-0 rounded-2xl p-4 min-w-[120px] text-center transition-all duration-300 ${
+                  selectedCategory === interest.id
+                    ? `bg-gradient-to-r ${interest.gradient} text-white shadow-lg`
+                    : 'bg-white hover:shadow-md hover:-translate-y-1'
+                }`}
+                onClick={() => setSelectedCategory(interest.id)}
+              >
+                <div className={`flex justify-center mb-2 ${
+                  selectedCategory === interest.id ? 'text-white' : interest.color
+                }`}>
+                  {interest.icon}
+                </div>
+                <span className={`text-sm font-medium block mb-1 ${
+                  selectedCategory === interest.id ? 'text-white' : 'text-gray-800'
+                }`}>
+                  {interest.name}
+                </span>
+                <span className={`text-xs ${
+                  selectedCategory === interest.id ? 'text-white/80' : 'text-gray-600'
+                }`}>
+                  {interest.members} miembros
+                </span>
+              </button>
+            ))}
           </div>
-        </div>
+        </motion.div>
+
+        {/* Posts Header */}
+        <motion.div variants={itemVariants} className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800">
+            {selectedCategory === 'general' ? 'Todos los consejos' : getInterestData(selectedCategory).name}
+          </h2>
+          <div className="flex items-center bg-green-100 px-3 py-1 rounded-full">
+            <Shield className="w-3 h-3 text-green-600 mr-1" />
+            <span className="text-xs font-medium text-green-700">IA Moderado</span>
+          </div>
+        </motion.div>
 
         {/* Posts */}
-        <div className="posts-container">
-          <div className="posts-header">
-            <h2>
-              {selectedCategory === 'general' ? 'Todos los consejos' : interests.find(i => i.id === selectedCategory)?.name}
-            </h2>
-            <div className="ai-moderation-badge">
-              <Shield size={14} color="var(--color-success)" />
-              <span>IA Moderado</span>
-            </div>
-          </div>
-
-          {getFilteredPosts().map((post) => (
-            <div key={post.id} className="post-card card">
-              <div className="post-header">
-                <div className="post-author">
-                  <div 
-                    className="category-icon"
-                    style={{ backgroundColor: `${getCategoryColor(post.category)}20` }}
-                  >
-                    {getCategoryIcon(post.category)}
+        <div className="space-y-4">
+          {getFilteredPosts().map((post) => {
+            const interestData = getInterestData(post.category);
+            
+            return (
+              <motion.div
+                key={post.id}
+                variants={itemVariants}
+                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className={`w-10 h-10 bg-gradient-to-r ${interestData.gradient} rounded-full flex items-center justify-center mr-3`}>
+                      <div className="text-white">
+                        {interestData.icon}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-800">{post.author}</span>
+                      <span className="text-sm text-gray-500 ml-2">{post.timestamp}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="author-name">{post.author}</span>
-                    <span className="post-time">{post.timestamp}</span>
-                  </div>
+                  {post.isHelpful && (
+                    <div className="bg-yellow-100 px-3 py-1 rounded-full">
+                      <span className="text-xs font-medium text-yellow-700">✨ Útil</span>
+                    </div>
+                  )}
                 </div>
-                {post.isHelpful && (
-                  <div className="helpful-badge">
-                    <span>✨ Útil</span>
+
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">{post.title}</h3>
+                <p className="text-gray-600 leading-relaxed mb-4">{post.content}</p>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors"
+                      onClick={() => handleLike(post.id)}
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span className="text-sm font-medium">{post.likes}</span>
+                    </button>
+
+                    <button
+                      className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
+                      onClick={() => handleReply(post.id)}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span className="text-sm font-medium">{post.replies}</span>
+                    </button>
                   </div>
-                )}
-              </div>
 
-              <h3 className="post-title">{post.title}</h3>
-              <p className="post-content">{post.content}</p>
-
-              <div className="post-actions">
-                <button
-                  className="action-button"
-                  onClick={() => handleLike(post.id)}
-                >
-                  <Heart size={16} color="var(--color-error)" />
-                  <span>{post.likes}</span>
-                </button>
-
-                <button
-                  className="action-button"
-                  onClick={() => handleReply(post.id)}
-                >
-                  <MessageSquare size={16} color="var(--color-gray-500)" />
-                  <span>{post.replies}</span>
-                </button>
-
-                {post.aiModerated && (
-                  <div className="ai-moderation-indicator">
-                    <Shield size={12} color="var(--color-success)" />
-                    <span>Verificado por IA</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          <div className="community-footer card">
-            <h3>🤖 Moderación por IA</h3>
-            <p>
-              Todos los mensajes son revisados por inteligencia artificial para mantener un ambiente positivo y constructivo. Solo se publican consejos útiles y respetuosos.
-            </p>
-          </div>
+                  {post.aiModerated && (
+                    <div className="flex items-center">
+                      <Shield className="w-3 h-3 text-green-600 mr-1" />
+                      <span className="text-xs text-green-700">Verificado por IA</span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
 
-      <style jsx>{`
-        .community-container {
-          min-height: 100vh;
-          background: var(--bg-secondary);
-        }
-
-        .community-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--spacing-6);
-          background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .header-text {
-          flex: 1;
-          margin-left: var(--spacing-3);
-        }
-
-        .header-text h1 {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin: 0;
-        }
-
-        .header-text p {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        .add-button {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: var(--bg-tertiary);
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: background-color var(--transition-fast);
-        }
-
-        .add-button:hover {
-          background: var(--color-gray-300);
-        }
-
-        .community-content {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: var(--spacing-6);
-        }
-
-        .new-post-container {
-          margin-bottom: var(--spacing-6);
-        }
-
-        .new-post-container h3 {
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-3);
-        }
-
-        .new-post-input {
-          width: 100%;
-          border: 1px solid var(--border-medium);
-          border-radius: var(--radius-lg);
-          padding: var(--spacing-4);
-          font-family: var(--font-family-primary);
-          font-size: var(--font-size-base);
-          color: var(--text-primary);
-          background: var(--bg-primary);
-          resize: vertical;
-          margin-bottom: var(--spacing-4);
-        }
-
-        .new-post-input:focus {
-          outline: none;
-          border-color: var(--color-primary);
-        }
-
-        .new-post-actions {
-          display: flex;
-          justify-content: space-between;
-        }
-
-        .cancel-button {
-          background: none;
-          border: none;
-          padding: var(--spacing-3) var(--spacing-5);
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          color: var(--text-secondary);
-          font-weight: 500;
-        }
-
-        .submit-button {
-          display: flex;
-          align-items: center;
-          background: var(--color-primary);
-          color: var(--text-inverse);
-          border: none;
-          padding: var(--spacing-3) var(--spacing-5);
-          border-radius: var(--radius-md);
-          cursor: pointer;
-          font-weight: 600;
-          gap: var(--spacing-2);
-          transition: background-color var(--transition-fast);
-        }
-
-        .submit-button:hover:not(.disabled) {
-          background: var(--color-primary-dark);
-        }
-
-        .submit-button.disabled {
-          background: var(--color-gray-400);
-          cursor: not-allowed;
-        }
-
-        .categories-container {
-          background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-light);
-          margin: 0 -var(--spacing-6) var(--spacing-6);
-          padding: var(--spacing-4) var(--spacing-6);
-        }
-
-        .categories-scroll {
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .categories {
-          display: flex;
-          gap: var(--spacing-3);
-          min-width: max-content;
-          padding-bottom: var(--spacing-2);
-        }
-
-        .category-button {
-          background: var(--bg-tertiary);
-          border: none;
-          border-radius: var(--radius-lg);
-          padding: var(--spacing-3);
-          min-width: 120px;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .category-button:hover {
-          transform: translateY(-1px);
-        }
-
-        .category-content {
-          display: flex;
-          align-items: center;
-          margin-bottom: var(--spacing-1);
-          gap: var(--spacing-2);
-        }
-
-        .category-content span {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-        }
-
-        .category-members {
-          font-size: var(--font-size-xs);
-          color: var(--text-secondary);
-        }
-
-        .category-button.active .category-members {
-          color: var(--text-inverse);
-        }
-
-        .posts-container {
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-4);
-        }
-
-        .posts-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--spacing-4);
-        }
-
-        .posts-header h2 {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .ai-moderation-badge {
-          display: flex;
-          align-items: center;
-          background: var(--color-secondary-light);
-          padding: var(--spacing-1) var(--spacing-2);
-          border-radius: var(--radius-lg);
-          gap: var(--spacing-1);
-        }
-
-        .ai-moderation-badge span {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-          color: #065F46;
-        }
-
-        .post-card {
-          transition: transform var(--transition-fast);
-        }
-
-        .post-card:hover {
-          transform: translateY(-1px);
-        }
-
-        .post-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: var(--spacing-3);
-        }
-
-        .post-author {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-3);
-        }
-
-        .category-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .author-name {
-          font-size: var(--font-size-sm);
-          font-weight: 600;
-          color: var(--text-primary);
-          display: block;
-        }
-
-        .post-time {
-          font-size: var(--font-size-xs);
-          color: var(--text-tertiary);
-        }
-
-        .helpful-badge {
-          background: var(--color-accent-light);
-          padding: var(--spacing-1) var(--spacing-2);
-          border-radius: var(--radius-md);
-        }
-
-        .helpful-badge span {
-          font-size: var(--font-size-xs);
-          font-weight: 500;
-          color: #92400E;
-        }
-
-        .post-title {
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-2);
-        }
-
-        .post-content {
-          font-size: var(--font-size-base);
-          color: var(--text-secondary);
-          line-height: 1.6;
-          margin-bottom: var(--spacing-4);
-        }
-
-        .post-actions {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-4);
-        }
-
-        .action-button {
-          display: flex;
-          align-items: center;
-          background: none;
-          border: none;
-          cursor: pointer;
-          gap: var(--spacing-1);
-          transition: color var(--transition-fast);
-        }
-
-        .action-button:hover {
-          color: var(--color-primary);
-        }
-
-        .action-button span {
-          font-size: var(--font-size-sm);
-          font-weight: 500;
-          color: var(--text-secondary);
-        }
-
-        .ai-moderation-indicator {
-          display: flex;
-          align-items: center;
-          margin-left: auto;
-          gap: var(--spacing-1);
-        }
-
-        .ai-moderation-indicator span {
-          font-size: var(--font-size-xs);
-          color: #065F46;
-        }
-
-        .community-footer {
-          text-align: center;
-          margin-top: var(--spacing-5);
-        }
-
-        .community-footer h3 {
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: var(--spacing-2);
-        }
-
-        .community-footer p {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          line-height: 1.5;
-        }
-
-        @media (max-width: 768px) {
-          .community-content {
-            padding: var(--spacing-4);
-          }
-
-          .categories-container {
-            margin: 0 -var(--spacing-4) var(--spacing-4);
-            padding: var(--spacing-3) var(--spacing-4);
-          }
-
-          .posts-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--spacing-2);
-          }
-
-          .post-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--spacing-2);
-          }
-        }
-      `}</style>
+        {/* Footer */}
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">🤖 Moderación por IA</h3>
+          <p className="text-gray-600 leading-relaxed">
+            Todos los mensajes son revisados por inteligencia artificial para mantener un ambiente positivo y constructivo. Solo se publican consejos útiles y respetuosos.
+          </p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

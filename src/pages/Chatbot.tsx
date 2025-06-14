@@ -3,10 +3,10 @@ import { Send, Bot, User, Heart, Lightbulb, Coffee, BookOpen } from 'lucide-reac
 import { useWellness } from '../contexts/WellnessContext';
 import { Message } from '../types/chat';
 import { sendMessageToGPT } from '../services/chatService';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * Bot response templates organized by category
- * These can be customized to match brand voice and personality
  */
 const botResponses = {
   greeting: [
@@ -48,7 +48,7 @@ const botResponses = {
 
 /**
  * Chatbot Page Component
- * AI-powered conversational interface for wellness support
+ * Modern chat interface with animations
  */
 const Chatbot: React.FC = () => {
   const { wellnessData } = useWellness();
@@ -159,18 +159,25 @@ const Chatbot: React.FC = () => {
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, botMessage]);
+      setTimeout(() => {
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+      }, 1000);
     } catch (error) {
       console.error('Error al obtener respuesta:', error);
+      const fallbackResponse = getBotResponse(inputText);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Lo siento, hubo un error al procesar tu mensaje. ¿Podrías intentarlo de nuevo?",
+        text: fallbackResponse.text,
         isBot: true,
-        timestamp: new Date()
+        timestamp: new Date(),
+        category: fallbackResponse.category
       };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
+      
+      setTimeout(() => {
+        setMessages(prev => [...prev, errorMessage]);
+        setIsTyping(false);
+      }, 1000);
     }
   };
 
@@ -180,15 +187,15 @@ const Chatbot: React.FC = () => {
   const getCategoryIcon = (category?: string) => {
     switch (category) {
       case 'mood':
-        return <Heart size={16} color="var(--color-error)" />;
+        return <Heart className="w-4 h-4 text-red-500" />;
       case 'academic':
-        return <BookOpen size={16} color="var(--color-primary)" />;
+        return <BookOpen className="w-4 h-4 text-blue-500" />;
       case 'wellness':
-        return <Coffee size={16} color="var(--color-success)" />;
+        return <Coffee className="w-4 h-4 text-green-500" />;
       case 'motivation':
-        return <Lightbulb size={16} color="var(--color-warning)" />;
+        return <Lightbulb className="w-4 h-4 text-yellow-500" />;
       default:
-        return <Bot size={16} color="var(--color-gray-500)" />;
+        return <Bot className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -217,63 +224,91 @@ const Chatbot: React.FC = () => {
   };
 
   return (
-    <div className="chatbot-container">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="chatbot-header">
-        <Bot size={24} color="var(--color-primary)" />
-        <div className="header-text">
-          <h2>Asistente IA</h2>
-          <p>Aquí para apoyarte 💙</p>
+      <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 px-4 py-4 safe-area-top">
+        <div className="flex items-center">
+          <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+            <Bot className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Asistente IA</h2>
+            <p className="text-sm text-gray-600">Aquí para apoyarte 💙</p>
+          </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="messages-container">
-        {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={`message-container ${message.isBot ? 'bot-message' : 'user-message'}`}
-          >
-            {message.isBot && (
-              <div className="bot-avatar">
-                {getCategoryIcon(message.category)}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <AnimatePresence>
+          {messages.map((message) => (
+            <motion.div
+              key={message.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
+            >
+              <div className={`flex items-end max-w-xs lg:max-w-md ${
+                message.isBot ? 'flex-row' : 'flex-row-reverse'
+              }`}>
+                {message.isBot && (
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                    {getCategoryIcon(message.category)}
+                  </div>
+                )}
+                
+                <div className={`px-4 py-3 rounded-2xl ${
+                  message.isBot
+                    ? 'bg-white shadow-md rounded-bl-sm'
+                    : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-br-sm'
+                }`}>
+                  <p className="text-sm leading-relaxed">{message.text}</p>
+                </div>
+                
+                {!message.isBot && (
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center ml-2 flex-shrink-0">
+                    <User className="w-4 h-4 text-gray-600" />
+                  </div>
+                )}
               </div>
-            )}
-            
-            <div className={`message-bubble ${message.isBot ? 'bot' : 'user'}`}>
-              <p>{message.text}</p>
-            </div>
-            
-            {!message.isBot && (
-              <div className="user-avatar">
-                <User size={16} color="var(--color-primary)" />
-              </div>
-            )}
-          </div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
         
         {isTyping && (
-          <div className="message-container bot-message">
-            <div className="bot-avatar">
-              <Bot size={16} color="var(--color-gray-500)" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="flex items-end max-w-xs">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-2">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="bg-white shadow-md px-4 py-3 rounded-2xl rounded-bl-sm">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
             </div>
-            <div className="message-bubble bot">
-              <p className="typing-text">Escribiendo...</p>
-            </div>
-          </div>
+          </motion.div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Actions */}
       {messages.length <= 2 && (
-        <div className="quick-actions-container">
-          <p className="quick-actions-title">Respuestas rápidas:</p>
-          <div className="quick-actions">
+        <div className="px-4 py-3 bg-white/50 backdrop-blur-sm border-t border-gray-200/50">
+          <p className="text-sm font-medium text-gray-700 mb-3">Respuestas rápidas:</p>
+          <div className="flex flex-wrap gap-2">
             {quickActions.map((action, index) => (
               <button
                 key={index}
-                className="quick-action-button"
+                className="bg-white/80 backdrop-blur-sm border border-gray-200 px-3 py-2 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                 onClick={() => setInputText(action.action)}
               >
                 {action.text}
@@ -284,229 +319,32 @@ const Chatbot: React.FC = () => {
       )}
 
       {/* Input */}
-      <div className="input-container">
-        <textarea
-          className="text-input"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Escribe tu mensaje..."
-          rows={1}
-        />
-        <button 
-          className={`send-button ${inputText.trim() ? 'active' : ''}`}
-          onClick={sendMessage}
-          disabled={!inputText.trim() || isTyping}
-        >
-          <Send size={20} />
-        </button>
+      <div className="bg-white/80 backdrop-blur-lg border-t border-gray-200/50 px-4 py-4 safe-area-bottom">
+        <div className="flex items-end space-x-3">
+          <div className="flex-1 relative">
+            <textarea
+              className="w-full bg-gray-100 rounded-2xl px-4 py-3 pr-12 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-200"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Escribe tu mensaje..."
+              rows={1}
+              style={{ minHeight: '44px', maxHeight: '120px' }}
+            />
+          </div>
+          <button
+            onClick={sendMessage}
+            disabled={!inputText.trim() || isTyping}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
+              inputText.trim() && !isTyping
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-105'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
       </div>
-
-      <style>{`
-        .chatbot-container {
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-          background: var(--bg-secondary);
-        }
-
-        .chatbot-header {
-          display: flex;
-          align-items: center;
-          padding: var(--spacing-6);
-          background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .header-text {
-          margin-left: var(--spacing-3);
-        }
-
-        .header-text h2 {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin: 0;
-        }
-
-        .header-text p {
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        .messages-container {
-          flex: 1;
-          overflow-y: auto;
-          padding: var(--spacing-4);
-          display: flex;
-          flex-direction: column;
-          gap: var(--spacing-4);
-        }
-
-        .message-container {
-          display: flex;
-          align-items: flex-end;
-          gap: var(--spacing-2);
-        }
-
-        .message-container.bot-message {
-          justify-content: flex-start;
-        }
-
-        .message-container.user-message {
-          justify-content: flex-end;
-        }
-
-        .bot-avatar,
-        .user-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: var(--color-primary-light);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .user-avatar {
-          background: var(--color-primary-light);
-        }
-
-        .message-bubble {
-          max-width: 70%;
-          padding: var(--spacing-3) var(--spacing-4);
-          border-radius: var(--radius-xl);
-          word-wrap: break-word;
-        }
-
-        .message-bubble.bot {
-          background: var(--bg-primary);
-          color: var(--text-primary);
-          border-bottom-left-radius: var(--radius-sm);
-        }
-
-        .message-bubble.user {
-          background: var(--color-primary);
-          color: var(--text-inverse);
-          border-bottom-right-radius: var(--radius-sm);
-        }
-
-        .message-bubble p {
-          margin: 0;
-          line-height: 1.5;
-        }
-
-        .typing-text {
-          color: var(--text-secondary);
-          font-style: italic;
-        }
-
-        .quick-actions-container {
-          padding: var(--spacing-4);
-          background: var(--bg-primary);
-          border-top: 1px solid var(--border-light);
-        }
-
-        .quick-actions-title {
-          font-size: var(--font-size-sm);
-          font-weight: 500;
-          color: var(--text-secondary);
-          margin-bottom: var(--spacing-3);
-        }
-
-        .quick-actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--spacing-2);
-        }
-
-        .quick-action-button {
-          background: var(--bg-tertiary);
-          border: none;
-          padding: var(--spacing-2) var(--spacing-3);
-          border-radius: var(--radius-full);
-          font-size: var(--font-size-sm);
-          font-weight: 500;
-          color: var(--text-primary);
-          cursor: pointer;
-          transition: background-color var(--transition-fast);
-        }
-
-        .quick-action-button:hover {
-          background: var(--color-gray-300);
-        }
-
-        .input-container {
-          display: flex;
-          align-items: flex-end;
-          padding: var(--spacing-4);
-          background: var(--bg-primary);
-          border-top: 1px solid var(--border-light);
-          gap: var(--spacing-3);
-        }
-
-        .text-input {
-          flex: 1;
-          border: 1px solid var(--border-medium);
-          border-radius: var(--radius-xl);
-          padding: var(--spacing-3) var(--spacing-4);
-          font-family: var(--font-family-primary);
-          font-size: var(--font-size-base);
-          color: var(--text-primary);
-          background: var(--bg-primary);
-          resize: none;
-          min-height: 44px;
-          max-height: 120px;
-        }
-
-        .text-input:focus {
-          outline: none;
-          border-color: var(--color-primary);
-        }
-
-        .send-button {
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          border: none;
-          background: var(--bg-tertiary);
-          color: var(--text-tertiary);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all var(--transition-fast);
-        }
-
-        .send-button.active {
-          background: var(--color-primary);
-          color: var(--text-inverse);
-        }
-
-        .send-button:hover.active {
-          background: var(--color-primary-dark);
-        }
-
-        .send-button:disabled {
-          cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-          .message-bubble {
-            max-width: 85%;
-          }
-          
-          .quick-actions {
-            flex-direction: column;
-          }
-          
-          .quick-action-button {
-            text-align: left;
-          }
-        }
-      `}</style>
     </div>
   );
 };
