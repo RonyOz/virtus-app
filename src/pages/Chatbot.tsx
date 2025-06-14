@@ -1,14 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Heart, Lightbulb, Coffee, BookOpen } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
-
-interface Message {
-  id: string;
-  text: string;
-  isBot: boolean;
-  timestamp: Date;
-  category?: 'greeting' | 'mood' | 'academic' | 'wellness' | 'motivation';
-}
+import { Message } from '../types/chat';
+import { sendMessageToGPT } from '../services/chatService';
 
 /**
  * Bot response templates organized by category
@@ -61,10 +55,9 @@ const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "¡Hola! 😊 Soy tu asistente de bienestar. ¿Cómo amaneciste hoy? Puedes contarme sobre tu estado de ánimo, energía, o si necesitas algún consejo.",
+      text: "¡Hola! 😊 Soy tu asistente de bienestar. ¿Cómo te sientes hoy? Estoy aquí para escucharte y apoyarte.",
       isBot: true,
-      timestamp: new Date(),
-      category: 'greeting'
+      timestamp: new Date()
     }
   ]);
   const [inputText, setInputText] = useState('');
@@ -149,27 +142,36 @@ const Chatbot: React.FC = () => {
       id: Date.now().toString(),
       text: inputText,
       isBot: false,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
 
-    // Simulate typing delay
-    setTimeout(() => {
-      const response = getBotResponse(inputText);
+    try {
+      const botResponse = await sendMessageToGPT([...messages, userMessage]);
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response.text,
+        text: botResponse,
         isBot: true,
-        timestamp: new Date(),
-        category: response.category as any,
+        timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error al obtener respuesta:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Lo siento, hubo un error al procesar tu mensaje. ¿Podrías intentarlo de nuevo?",
+        isBot: true,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   /**
@@ -294,7 +296,7 @@ const Chatbot: React.FC = () => {
         <button 
           className={`send-button ${inputText.trim() ? 'active' : ''}`}
           onClick={sendMessage}
-          disabled={!inputText.trim()}
+          disabled={!inputText.trim() || isTyping}
         >
           <Send size={20} />
         </button>
