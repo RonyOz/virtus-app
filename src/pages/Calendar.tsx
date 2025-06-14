@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, AlertTriangle, BookOpen, Coffee, Users, Brain } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
 import { motion } from 'framer-motion';
+import { generateRecommendation } from '../services/generateRecommendation';
 
 interface CalendarEvent {
   id: string;
@@ -20,6 +21,13 @@ interface WeekDay {
   mentalLoad: number;
 }
 
+interface NewEvent {
+  title: string;
+  date: string;
+  time: string;
+  type: 'academic' | 'wellness' | 'social' | 'warning';
+}
+
 /**
  * Calendar Page Component
  * Modern calendar with mental load prediction
@@ -28,7 +36,23 @@ const Calendar: React.FC = () => {
   const { wellnessData } = useWellness();
   const [selectedDate, setSelectedDate] = useState('2025-01-28');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [recommendationText, setRecommendationText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [newEvent, setNewEvent] = useState<NewEvent>({
+    title: '',
+    date: '',
+    time: '',
+    type: 'academic'
+  });
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [mainRecommendation, setMainRecommendation] = useState({
+    title: '🌟 Optimización del día',
+    message: 'Tu día se ve equilibrado. ¡Mantén ese balance entre productividad y bienestar!',
+    action: 'Ver más sugerencias',
+    gradient: 'from-blue-400 to-indigo-500'
+  });
+  const [isMainButtonLoading, setIsMainButtonLoading] = useState(false);
 
   /**
    * Generate week days with mental load simulation
@@ -60,58 +84,181 @@ const Calendar: React.FC = () => {
 
   const [weekDays] = useState(generateWeekDays());
 
-  const events: CalendarEvent[] = [
-    {
-      id: '1',
-      title: 'Examen de Cálculo',
-      date: '2025-01-28',
-      time: '10:00',
-      type: 'academic',
-      stress_level: 8,
-      description: 'Examen final de cálculo diferencial'
-    },
-    {
-      id: '2',
-      title: 'Entrega de Proyecto',
-      date: '2025-01-28',
-      time: '15:00',
-      type: 'academic',
-      stress_level: 7,
-      description: 'Proyecto final de programación'
-    },
-    {
-      id: '3',
-      title: 'Sesión de meditación',
-      date: '2025-01-28',
-      time: '18:00',
-      type: 'wellness',
-      description: 'Meditación grupal - Reducir estrés pre-examen'
-    },
-    {
-      id: '4',
-      title: '⚠️ Día de alta carga mental',
-      date: '2025-01-29',
-      time: 'Todo el día',
-      type: 'warning',
-      description: 'Se detecta alta carga académica. Programa descansos.'
-    },
-    {
-      id: '5',
-      title: 'Café con amigos',
-      date: '2025-01-29',
-      time: '16:00',
-      type: 'social',
-      description: 'Recomendado: Socializar después del examen'
-    },
-    {
-      id: '6',
-      title: 'Ejercicio en el parque',
-      date: '2025-01-30',
-      time: '07:00',
-      type: 'wellness',
-      description: 'Actividad física para liberar endorfinas'
+  /**
+   * Generate wellness recommendation based on current state and event data
+   */
+  const generateWellnessRecommendation = (eventData?: CalendarEvent) => {
+    const todayEvents = eventData ? [eventData] : getEventsForDate(selectedDate);
+    const academicEvents = todayEvents.filter(e => e.type === 'academic').length;
+    const stressLevel = wellnessData.stress;
+    const mood = wellnessData.mood;
+
+    if (eventData?.type === 'academic' && stressLevel >= 6) {
+      return {
+        title: '📚 Recomendación para evento académico',
+        message: 'Este evento académico coincide con un nivel de estrés elevado. Te sugerimos programar un descanso de 15 minutos antes y después del evento.',
+        action: 'Programar descansos',
+        gradient: 'from-purple-400 to-indigo-500'
+      };
     }
-  ];
+
+    if (eventData?.type === 'wellness') {
+      return {
+        title: '🧘 Recomendación de bienestar',
+        message: 'Excelente elección incluir una actividad de bienestar. Esto ayudará a balancear tu carga mental.',
+        action: 'Ver más sugerencias',
+        gradient: 'from-green-400 to-emerald-500'
+      };
+    }
+
+    if (eventData?.type === 'social' && mood <= 5) {
+      return {
+        title: '👥 Recomendación social',
+        message: 'Buena decisión programar una actividad social cuando tu estado de ánimo está bajo. La interacción social puede ayudar a mejorarlo.',
+        action: 'Agregar más eventos sociales',
+        gradient: 'from-yellow-400 to-orange-500'
+      };
+    }
+
+    if (academicEvents >= 2 && stressLevel >= 6) {
+      return {
+        title: '🧘 Recomendación de bienestar',
+        message: 'Tienes un día académicamente intenso. Te sugerimos incluir momentos de respiración profunda entre actividades.',
+        action: 'Programar descansos',
+        gradient: 'from-purple-400 to-indigo-500'
+      };
+    }
+
+    if (mood <= 5) {
+      return {
+        title: '💚 Apoyo emocional',
+        message: 'Tu estado de ánimo está bajo. ¿Qué te parece programar una actividad que disfrutes?',
+        action: 'Agregar actividad placentera',
+        gradient: 'from-green-400 to-emerald-500'
+      };
+    }
+
+    return {
+      title: '🌟 Optimización del día',
+      message: 'Tu día se ve equilibrado. ¡Mantén ese balance entre productividad y bienestar!',
+      action: 'Ver más sugerencias',
+      gradient: 'from-blue-400 to-indigo-500'
+    };
+  };
+
+  const handleAddEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate fields
+    if (!newEvent.title || !newEvent.date || !newEvent.time || !newEvent.type) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+
+    setIsLoading(true);
+    setRecommendationText('Generando recomendación personalizada...');
+    setShowRecommendation(true);
+
+    try {
+      // Create new event object
+      const event: CalendarEvent = {
+        id: Date.now().toString(),
+        title: newEvent.title,
+        date: newEvent.date,
+        time: newEvent.time,
+        type: newEvent.type,
+        stress_level: wellnessData.stress,
+        description: `Evento creado con estado de ánimo: ${wellnessData.mood}/10`
+      };
+
+      // Add to events list
+      setEvents(prevEvents => [...prevEvents, event]);
+
+      // Generate recommendation using the service
+      const recommendation = await generateRecommendation(
+        event.title,
+        event.type,
+        wellnessData.mood,
+        wellnessData.stress
+      );
+
+      if (recommendation.includes('error') || recommendation.includes('Error')) {
+        throw new Error(recommendation);
+      }
+
+      setRecommendationText(recommendation);
+      setIsModalOpen(false);
+
+      // Reset form
+      setNewEvent({
+        title: '',
+        date: '',
+        time: '',
+        type: 'academic'
+      });
+    } catch (error) {
+      console.error('Error al generar recomendación:', error);
+      setRecommendationText('Lo siento, hubo un error al generar la recomendación. Por favor intenta de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMoreSuggestions = async () => {
+    setIsLoading(true);
+    setRecommendationText('Generando más sugerencias...');
+
+    try {
+      const recommendation = await generateRecommendation(
+        'Sugerencias adicionales',
+        'wellness',
+        wellnessData.mood,
+        wellnessData.stress
+      );
+
+      if (recommendation.includes('error') || recommendation.includes('Error')) {
+        throw new Error(recommendation);
+      }
+
+      setRecommendationText(recommendation);
+    } catch (error) {
+      console.error('Error al generar sugerencias adicionales:', error);
+      setRecommendationText('Lo siento, hubo un error al generar sugerencias adicionales. Por favor intenta de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMainRecommendationClick = async () => {
+    setIsMainButtonLoading(true);
+    try {
+      const recommendation = await generateRecommendation(
+        'Recomendación general',
+        'wellness',
+        wellnessData.mood,
+        wellnessData.stress
+      );
+
+      if (recommendation.includes('error') || recommendation.includes('Error')) {
+        throw new Error(recommendation);
+      }
+
+      setMainRecommendation({
+        title: '🌟 Recomendación personalizada',
+        message: recommendation,
+        action: 'Ver más sugerencias',
+        gradient: 'from-blue-400 to-indigo-500'
+      });
+    } catch (error) {
+      console.error('Error al generar recomendación principal:', error);
+      setMainRecommendation(prev => ({
+        ...prev,
+        message: 'Lo siento, hubo un error al generar la recomendación. Por favor intenta de nuevo.'
+      }));
+    } finally {
+      setIsMainButtonLoading(false);
+    }
+  };
 
   /**
    * Get events for a specific date
@@ -163,40 +310,6 @@ const Calendar: React.FC = () => {
     if (load >= 7) return 'from-red-400 to-red-500';
     if (load >= 5) return 'from-yellow-400 to-orange-500';
     return 'from-green-400 to-emerald-500';
-  };
-
-  /**
-   * Generate wellness recommendation based on current state
-   */
-  const generateWellnessRecommendation = () => {
-    const todayEvents = getEventsForDate(selectedDate);
-    const academicEvents = todayEvents.filter(e => e.type === 'academic').length;
-    const stressLevel = wellnessData.stress;
-
-    if (academicEvents >= 2 && stressLevel >= 6) {
-      return {
-        title: '🧘 Recomendación de bienestar',
-        message: 'Tienes un día académicamente intenso. Te sugerimos incluir momentos de respiración profunda entre actividades.',
-        action: 'Programar descansos',
-        gradient: 'from-purple-400 to-indigo-500'
-      };
-    }
-
-    if (wellnessData.mood <= 5) {
-      return {
-        title: '💚 Apoyo emocional',
-        message: 'Tu estado de ánimo está bajo. ¿Qué te parece programar una actividad que disfrutes?',
-        action: 'Agregar actividad placentera',
-        gradient: 'from-green-400 to-emerald-500'
-      };
-    }
-
-    return {
-      title: '🌟 Optimización del día',
-      message: 'Tu día se ve equilibrado. ¡Mantén ese balance entre productividad y bienestar!',
-      action: 'Ver más sugerencias',
-      gradient: 'from-blue-400 to-indigo-500'
-    };
   };
 
   const recommendation = generateWellnessRecommendation();
@@ -288,14 +401,27 @@ const Calendar: React.FC = () => {
         {/* AI Recommendation */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
           <div className="flex items-center mb-4">
-            <div className={`w-10 h-10 bg-gradient-to-r ${recommendation.gradient} rounded-xl flex items-center justify-center mr-3`}>
+            <div className={`w-10 h-10 bg-gradient-to-r ${mainRecommendation.gradient} rounded-xl flex items-center justify-center mr-3`}>
               <Brain className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">{recommendation.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              {isMainButtonLoading ? 'Generando recomendación...' : mainRecommendation.title}
+            </h3>
           </div>
-          <p className="text-gray-600 mb-4 leading-relaxed">{recommendation.message}</p>
-          <button className={`w-full bg-gradient-to-r ${recommendation.gradient} text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300`}>
-            {recommendation.action}
+          <p className="text-gray-600 mb-4 leading-relaxed">
+            {isMainButtonLoading ? 'Cargando...' : mainRecommendation.message}
+          </p>
+          <button 
+            onClick={handleMainRecommendationClick}
+            disabled={isMainButtonLoading}
+            className={`w-full bg-gradient-to-r ${mainRecommendation.gradient} text-white py-3 rounded-xl font-medium 
+              transition-all duration-300 
+              ${isMainButtonLoading 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+              }`}
+          >
+            {isMainButtonLoading ? 'Generando...' : mainRecommendation.action}
           </button>
         </motion.div>
 
@@ -311,27 +437,46 @@ const Calendar: React.FC = () => {
               </button>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Agregar nuevo evento</h3>
 
-              {/* Aquí irían los campos del formulario */}
-              <form className="space-y-4">
+              <form onSubmit={handleAddEvent} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Título del evento" />
+                  <input 
+                    type="text" 
+                    className="w-full border rounded-lg px-3 py-2 text-sm" 
+                    placeholder="Título del evento"
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                  />
                 </div>
 
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-                    <input type="date" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                    <input 
+                      type="date" 
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      value={newEvent.date}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
+                    />
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
-                    <input type="time" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                    <input 
+                      type="time" 
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      value={newEvent.time}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, time: e.target.value }))}
+                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                  <select className="w-full border rounded-lg px-3 py-2 text-sm">
+                  <select 
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    value={newEvent.type}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, type: e.target.value as NewEvent['type'] }))}
+                  >
                     <option value="academic">Académico</option>
                     <option value="wellness">Bienestar</option>
                     <option value="social">Social</option>
@@ -347,6 +492,45 @@ const Calendar: React.FC = () => {
           </div>
         )}
 
+        {/* Modal de recomendación */}
+        {showRecommendation && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
+              <button
+                onClick={() => setShowRecommendation(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {isLoading ? 'Generando recomendación...' : 'Recomendación personalizada'}
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                {recommendationText}
+              </p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => setShowRecommendation(false)}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+                >
+                  Entendido
+                </button>
+                <button 
+                  onClick={handleMoreSuggestions}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-purple-400 to-indigo-500 text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                >
+                  {isLoading ? 'Generando...' : 'Ver más sugerencias'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Events for Selected Date */}
         <motion.div variants={itemVariants}>
