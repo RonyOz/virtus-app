@@ -123,7 +123,7 @@ export const wellnessGoals: WellnessGoal[] = [
     id: "3",
     title: "Reducir niveles de ansiedad",
     target: 3,
-    current: 3.5,
+    current: 2.9,
     unit: "nivel",
     category: "anxiety",
     deadline: "2024-04-15",
