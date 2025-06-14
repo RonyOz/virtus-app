@@ -287,7 +287,7 @@ const Chatbot: React.FC = () => {
           className="text-input"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           placeholder="Escribe tu mensaje..."
           rows={1}
         />
@@ -300,7 +300,7 @@ const Chatbot: React.FC = () => {
         </button>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .chatbot-container {
           display: flex;
           flex-direction: column;
