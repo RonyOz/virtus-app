@@ -140,14 +140,6 @@ const Community: React.FC = () => {
   ];
 
   /**
-   * Filter posts by selected category
-   */
-  const getFilteredPosts = () => {
-    if (selectedCategory === 'general') return communityPosts;
-    return communityPosts.filter(post => post.category === selectedCategory);
-  };
-
-  /**
    * Get icon for category
    */
   const getCategoryIcon = (category: string) => {
@@ -166,15 +158,26 @@ const Community: React.FC = () => {
   /**
    * Handle like button click
    */
+  const [posts, setPosts] = useState<CommunityPost[]>(communityPosts);
+
   const handleLike = (postId: string) => {
-    alert('¡Gracias! Tu apoyo ayuda a que este consejo llegue a más personas.');
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId ? { ...post, likes: post.likes + 1 } : post
+      )
+    );
   };
 
   /**
    * Handle reply button click
    */
   const handleReply = (postId: string) => {
-    alert('Responder', 'Esta función estará disponible pronto. ¡Gracias por tu interés en ayudar!');
+    setPosts(prev =>
+      prev.map(post =>
+        post.id === postId ? { ...post, replies: post.replies + 1 } : post
+      )
+    );
+    alert('Esta función estará disponible pronto. ¡Gracias por tu interés en ayudar!');
   };
 
   /**
@@ -182,10 +185,30 @@ const Community: React.FC = () => {
    */
   const submitPost = () => {
     if (!newPostContent.trim()) return;
-    
-    alert('✨ IA Moderando\n\nTu mensaje está siendo revisado para asegurar que sea positivo y útil para la comunidad. Se publicará en breve.');
+
+    const newPost: CommunityPost = {
+      id: (posts.length + 1).toString(),
+      author: 'Tú (Anónimo)',
+      category: selectedCategory as CommunityPost['category'],
+      title: 'Nuevo consejo',
+      content: newPostContent,
+      likes: 0,
+      replies: 0,
+      timestamp: 'ahora',
+      isHelpful: false,
+      aiModerated: true
+    };
+
+    setPosts([newPost, ...posts]);
     setNewPostContent('');
     setShowNewPost(false);
+    alert('✨ IA Moderando\n\nTu mensaje está siendo revisado para asegurar que sea positivo y útil para la comunidad. Se publicará en breve.');
+  };
+
+  // Update getFilteredPosts to use posts state
+  const getFilteredPosts = () => {
+    if (selectedCategory === 'general') return posts;
+    return posts.filter(post => post.category === selectedCategory);
   };
 
   return (
