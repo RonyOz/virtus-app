@@ -27,13 +27,7 @@ interface WeekDay {
 const Calendar: React.FC = () => {
   const { wellnessData } = useWellness();
   const [selectedDate, setSelectedDate] = useState('2025-01-28');
-
-  const [showModal, setShowModal] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    time: '',
-    type: 'academic' as CalendarEvent['type']
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
   /**
@@ -42,17 +36,17 @@ const Calendar: React.FC = () => {
   const generateWeekDays = (): WeekDay[] => {
     const today = new Date();
     const week = [];
-    
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      
+
       const dateString = date.toISOString().split('T')[0];
       const isToday = dateString === today.toISOString().split('T')[0];
-      
+
       // Simulate mental load calculation
       const mentalLoad = Math.random() * 10;
-      
+
       week.push({
         date: dateString,
         day: date.toLocaleDateString('es-ES', { weekday: 'short' }),
@@ -60,13 +54,13 @@ const Calendar: React.FC = () => {
         mentalLoad
       });
     }
-    
+
     return week;
   };
 
   const [weekDays] = useState(generateWeekDays());
 
-  const [events, setEvents] = useState<CalendarEvent[]>([
+  const events: CalendarEvent[] = [
     {
       id: '1',
       title: 'Examen de Cálculo',
@@ -117,7 +111,7 @@ const Calendar: React.FC = () => {
       type: 'wellness',
       description: 'Actividad física para liberar endorfinas'
     }
-  ]);
+  ];
 
   /**
    * Get events for a specific date
@@ -178,7 +172,7 @@ const Calendar: React.FC = () => {
     const todayEvents = getEventsForDate(selectedDate);
     const academicEvents = todayEvents.filter(e => e.type === 'academic').length;
     const stressLevel = wellnessData.stress;
-    
+
     if (academicEvents >= 2 && stressLevel >= 6) {
       return {
         title: '🧘 Recomendación de bienestar',
@@ -187,7 +181,7 @@ const Calendar: React.FC = () => {
         gradient: 'from-purple-400 to-indigo-500'
       };
     }
-    
+
     if (wellnessData.mood <= 5) {
       return {
         title: '💚 Apoyo emocional',
@@ -196,7 +190,7 @@ const Calendar: React.FC = () => {
         gradient: 'from-green-400 to-emerald-500'
       };
     }
-    
+
     return {
       title: '🌟 Optimización del día',
       message: 'Tu día se ve equilibrado. ¡Mantén ese balance entre productividad y bienestar!',
@@ -207,42 +201,27 @@ const Calendar: React.FC = () => {
 
   const recommendation = generateWellnessRecommendation();
 
-  //cambio
-  const openAddModal = () => setShowModal(true);
-  const closeAddModal = () => setShowModal(false);
-
-  const handleAddEvent = () => {
-    const newEventObj: CalendarEvent = {
-      id: `${Date.now()}`,
-      title: newEvent.title,
-      date: selectedDate,
-      time: newEvent.time,
-      type: newEvent.type,
-    };
-
-    const suggestion = getSmartSuggestion(newEventObj);
-    alert(suggestion);
-
-    setEvents((prevEvents) => [...prevEvents, newEventObj]); // ✅ ahora usamos setEvents
-
-    setNewEvent({ title: '', time: '', type: 'academic' });
-    closeAddModal();
-  };
-
-
-  const getSmartSuggestion = (event: CalendarEvent): string => {
-    switch (event.type) {
-      case 'academic':
-        return `📘 Para "${event.title}", intenta estudiar 40 minutos y descansar 10.`;
-      case 'wellness':
-        return `🧘 Actividad recomendada para equilibrar tu día.`;
-      case 'social':
-        return `👥 Recuerda que socializar también mejora tu bienestar.`;
-      default:
-        return '';
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
     }
   };
 
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -277,31 +256,27 @@ const Calendar: React.FC = () => {
             {weekDays.map((day) => (
               <button
                 key={day.date}
-                className={`flex-shrink-0 bg-white rounded-2xl p-4 min-w-[80px] text-center transition-all duration-300 ${
-                  day.isToday 
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' 
-                    : selectedDate === day.date 
-                      ? 'bg-gradient-to-r from-indigo-400 to-purple-500 text-white shadow-md' 
-                      : 'hover:shadow-md hover:-translate-y-1'
-                }`}
+                className={`flex-shrink-0 bg-white rounded-2xl p-4 min-w-[80px] text-center transition-all duration-300 ${day.isToday
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
+                  : selectedDate === day.date
+                    ? 'bg-gradient-to-r from-indigo-400 to-purple-500 text-white shadow-md'
+                    : 'hover:shadow-md hover:-translate-y-1'
+                  }`}
                 onClick={() => setSelectedDate(day.date)}
               >
-                <span className={`text-xs font-medium block mb-1 ${
-                  day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-500'
-                }`}>
+                <span className={`text-xs font-medium block mb-1 ${day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-500'
+                  }`}>
                   {day.day}
                 </span>
-                <span className={`text-xl font-bold block mb-2 ${
-                  day.isToday || selectedDate === day.date ? 'text-white' : 'text-gray-800'
-                }`}>
+                <span className={`text-xl font-bold block mb-2 ${day.isToday || selectedDate === day.date ? 'text-white' : 'text-gray-800'
+                  }`}>
                   {new Date(day.date).getDate()}
                 </span>
-                
+
                 <div className="flex flex-col items-center">
                   <div className={`w-2 h-2 rounded-full mb-1 bg-gradient-to-r ${getMentalLoadColor(day.mentalLoad)}`} />
-                  <span className={`text-xs font-medium ${
-                    day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-600'
-                  }`}>
+                  <span className={`text-xs font-medium ${day.isToday || selectedDate === day.date ? 'text-white/80' : 'text-gray-600'
+                    }`}>
                     {day.mentalLoad >= 7 ? 'Alta' : day.mentalLoad >= 5 ? 'Media' : 'Baja'}
                   </span>
                 </div>
@@ -324,23 +299,72 @@ const Calendar: React.FC = () => {
           </button>
         </motion.div>
 
+        {/* Este es el modal que abre el boton de agregar evento */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Agregar nuevo evento</h3>
+
+              {/* Aquí irían los campos del formulario */}
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Título del evento" />
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                    <input type="time" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                  <select className="w-full border rounded-lg px-3 py-2 text-sm">
+                    <option value="academic">Académico</option>
+                    <option value="wellness">Bienestar</option>
+                    <option value="social">Social</option>
+                    <option value="warning">Advertencia</option>
+                  </select>
+                </div>
+
+                <button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 rounded-xl font-medium hover:shadow-md transition">
+                  Guardar evento
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+
         {/* Events for Selected Date */}
         <motion.div variants={itemVariants}>
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Eventos del día ({new Date(selectedDate).toLocaleDateString('es-ES', { 
-              weekday: 'long', 
-              day: 'numeric', 
-              month: 'long' 
+            Eventos del día ({new Date(selectedDate).toLocaleDateString('es-ES', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long'
             })})
           </h2>
-          
+
           {getEventsForDate(selectedDate).length === 0 ? (
             <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CalendarIcon className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-gray-600 mb-4">No hay eventos programados</p>
-              <button className="inline-flex items-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300">
+              <button className="inline-flex items-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300" onClick={() => setIsModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Agregar evento
               </button>
@@ -366,9 +390,9 @@ const Calendar: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <h4 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h4>
-                  
+
                   {event.description && (
                     <p className="text-gray-600 text-sm leading-relaxed">{event.description}</p>
                   )}
@@ -391,7 +415,7 @@ const Calendar: React.FC = () => {
               </div>
               <span className="text-sm font-semibold text-orange-600">Alta</span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-gray-600 font-medium">Pasado mañana</span>
               <div className="flex items-center flex-1 mx-4">
@@ -402,7 +426,7 @@ const Calendar: React.FC = () => {
               <span className="text-sm font-semibold text-green-600">Baja</span>
             </div>
           </div>
-          
+
           <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
             <p className="text-sm text-blue-800 leading-relaxed">
               💡 <strong>Sugerencia:</strong> Programa actividades de autocuidado después de días intensos.
