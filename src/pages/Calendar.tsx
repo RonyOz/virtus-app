@@ -27,6 +27,14 @@ const Calendar: React.FC = () => {
   const { wellnessData } = useWellness();
   const [selectedDate, setSelectedDate] = useState('2025-01-28');
 
+  const [showModal, setShowModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    time: '',
+    type: 'academic' as CalendarEvent['type']
+  });
+
+
   /**
    * Generate week days with mental load simulation
    */
@@ -57,7 +65,7 @@ const Calendar: React.FC = () => {
 
   const [weekDays] = useState(generateWeekDays());
 
-  const events: CalendarEvent[] = [
+  const [events, setEvents] = useState<CalendarEvent[]>([
     {
       id: '1',
       title: 'Examen de Cálculo',
@@ -108,7 +116,7 @@ const Calendar: React.FC = () => {
       type: 'wellness',
       description: 'Actividad física para liberar endorfinas'
     }
-  ];
+  ]);
 
   /**
    * Get events for a specific date
@@ -195,13 +203,78 @@ const Calendar: React.FC = () => {
 
   const recommendation = generateWellnessRecommendation();
 
+  //cambio
+  const openAddModal = () => setShowModal(true);
+  const closeAddModal = () => setShowModal(false);
+
+  const handleAddEvent = () => {
+    const newEventObj: CalendarEvent = {
+      id: `${Date.now()}`,
+      title: newEvent.title,
+      date: selectedDate,
+      time: newEvent.time,
+      type: newEvent.type,
+    };
+
+    const suggestion = getSmartSuggestion(newEventObj);
+    alert(suggestion);
+
+    setEvents((prevEvents) => [...prevEvents, newEventObj]); // ✅ ahora usamos setEvents
+
+    setNewEvent({ title: '', time: '', type: 'academic' });
+    closeAddModal();
+  };
+
+
+  const getSmartSuggestion = (event: CalendarEvent): string => {
+    switch (event.type) {
+      case 'academic':
+        return `📘 Para "${event.title}", intenta estudiar 40 minutos y descansar 10.`;
+      case 'wellness':
+        return `🧘 Actividad recomendada para equilibrar tu día.`;
+      case 'social':
+        return `👥 Recuerda que socializar también mejora tu bienestar.`;
+      default:
+        return '';
+    }
+  };
+
+
   return (
     <div className="calendar-container">
+    {showModal && (
+      <div className="modal-overlay">
+        <div className="modal">
+          <h3>Agregar nuevo evento</h3>
+          <input
+            type="text"
+            placeholder="Título"
+            value={newEvent.title}
+            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+          />
+          <input
+            type="time"
+            value={newEvent.time}
+            onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+          />
+          <select
+            value={newEvent.type}
+            onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value as CalendarEvent['type'] })}
+          >
+            <option value="academic">Académico</option>
+            <option value="wellness">Bienestar</option>
+            <option value="social">Social</option>
+          </select>
+          <button onClick={handleAddEvent}>Guardar</button>
+          <button onClick={closeAddModal}>Cancelar</button>
+        </div>
+      </div>
+    )}
       {/* Header */}
       <div className="calendar-header">
         <CalendarIcon size={24} color="var(--color-primary)" />
         <h1>Calendario Inteligente</h1>
-        <button className="add-button">
+        <button className="add-button" onClick={openAddModal}>
           <Plus size={20} color="var(--color-primary)" />
         </button>
       </div>
@@ -258,7 +331,7 @@ const Calendar: React.FC = () => {
           {getEventsForDate(selectedDate).length === 0 ? (
             <div className="no-events-container card">
               <p>No hay eventos programados</p>
-              <button className="add-event-button">
+              <button className="add-event-button" onClick={openAddModal}>
                 <Plus size={16} color="var(--color-primary)" />
                 <span>Agregar evento</span>
               </button>
