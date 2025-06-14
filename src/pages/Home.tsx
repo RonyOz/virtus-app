@@ -282,11 +282,11 @@ const Home: React.FC = () => {
             >
               {
                 {
-                  'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg': '¡Ese entusiasmo se contagia! 🐱💪',
-                  'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg': 'Día tranquilo y feliz ☀️',
+                  'https://i.pinimg.com/736x/66/6d/a6/666da6bda6c4550f038bc22c082fa047.jpg': 'A veces el día necesita un cambio 🌀',
+                  'https://i.pinimg.com/736x/81/5f/cc/815fcc37ca4c4a40f0d58990d6cd0ccc.jpg': 'Animo Animo Animo 💪',
                   'https://i.pinimg.com/736x/28/1a/73/281a731e67a016683e8c5029da8a1ae1.jpg': 'Descansar también es avanzar 🌙',
-                  'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg': 'Respira... estás haciendo lo mejor que puedes 🌬️',
-                  'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg': 'A veces el día necesita un cambio 🌀'
+                  'https://i.pinimg.com/736x/a4/49/ac/a449ac13253c8c72793bcfbe56d9aa2c.jpg': 'Día tranquilo y feliz ☀️',
+                  'https://i.pinimg.com/736x/4e/2e/96/4e2e967861b2f7cfab30795c5518f0dc.jpg': 'Respira... estás haciendo lo mejor que puedes 🌬️'
                 }[dailyAnswers.catMood]
               }
             </motion.div>
