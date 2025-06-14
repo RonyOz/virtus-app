@@ -1,50 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Heart, Lightbulb, Coffee, BookOpen } from 'lucide-react';
+import { Send, Bot, User } from 'lucide-react';
 import { useWellness } from '../contexts/WellnessContext';
 import { Message } from '../types/chat';
 import { sendMessageToGPT } from '../services/chatService';
 import { motion, AnimatePresence } from 'framer-motion';
-
-/**
- * Bot response templates organized by category
- */
-const botResponses = {
-  greeting: [
-    "¡Hola! 😊 ¿Cómo amaneciste hoy? Me encantaría saber cómo te sientes.",
-    "¡Qué gusto verte! ¿Cómo ha estado tu día hasta ahora?",
-    "Hola, espero que tengas un día maravilloso. ¿En qué puedo ayudarte hoy?"
-  ],
-  mood_low: [
-    "Entiendo que no te sientes muy bien hoy. Recuerda que es completamente normal tener días difíciles. ¿Te gustaría hablar sobre lo que te está preocupando?",
-    "Parece que hoy ha sido un día complicado. Está bien sentirse así. ¿Qué te parece si hacemos un pequeño ejercicio de respiración juntos?",
-    "Noto que tu ánimo está bajo. Tu bienestar es importante, y estoy aquí para apoyarte. ¿Hay algo específico que te está afectando?"
-  ],
-  mood_good: [
-    "¡Me alegra saber que te sientes bien! 🌟 Aprovechemos esta energía positiva. ¿Hay algún objetivo que te gustaría trabajar hoy?",
-    "¡Excelente! Cuando nos sentimos bien, es el momento perfecto para dar pasos hacia nuestras metas. ¿Qué te gustaría hacer hoy?",
-    "Tu energía positiva es contagiosa. ¿Te parece si revisamos tus objetivos del día?ouiohiyhvujyhg"
-  ],
-  academic: [
-    "Para estudiar mejor, te recomiendo la técnica Pomodoro: 25 minutos de estudio intenso + 5 minutos de descanso. ¿Has probado esta técnica?",
-    "Si sientes que tienes mucha carga académica, hagamos un plan. ¿Qué materias son las más urgentes?",
-    "Recuerda: es mejor estudiar un poco cada día que mucho en una sola sesión. ¿Cómo está tu organización de tiempo?"
-  ],
-  wellness: [
-    "El autocuidado es fundamental. ¿Has tomado suficiente agua hoy? ¿Has hecho algún descanso activo?",
-    "Tu bienestar físico y mental van de la mano. ¿Te gustaría que te guíe en un ejercicio de respiración?",
-    "¿Sabías que caminar 10 minutos puede mejorar tu estado de ánimo? ¿Cuándo fue la última vez que saliste a tomar aire fresco?"
-  ],
-  motivation: [
-    "Como decía Marco Aurelio: 'Tienes poder sobre tu mente, no sobre los eventos externos. Date cuenta de esto, y encontrarás fuerza.'",
-    "Cada pequeño paso cuenta. No necesitas ser perfecto, solo necesitas ser constante.",
-    "Recuerda: el crecimiento sucede fuera de tu zona de confort, pero siempre a tu propio ritmo."
-  ],
-  tips: [
-    "💡 Tip del día: Cuando te sientas abrumado, haz una lista de 3 cosas que SÍ puedes controlar ahora mismo.",
-    "🌱 Dato curioso: Sonreír, incluso cuando no tienes ganas, puede activar las hormonas de la felicidad.",
-    "☕ Si necesitas energía, prueba esto: 15 sentadillas + un vaso de agua. Es más efectivo que otra taza de café."
-  ]
-};
 
 /**
  * Chatbot Page Component
@@ -63,74 +22,6 @@ const Chatbot: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Analyzes user message and returns appropriate bot response
-   */
-  const getBotResponse = (userMessage: string): { text: string; category: string } => {
-    const message = userMessage.toLowerCase();
-    
-    // Mood detection
-    if (message.includes('triste') || message.includes('mal') || message.includes('deprimido') || message.includes('bajo')) {
-      return {
-        text: botResponses.mood_low[Math.floor(Math.random() * botResponses.mood_low.length)],
-        category: 'mood'
-      };
-    }
-    
-    if (message.includes('bien') || message.includes('genial') || message.includes('excelente') || message.includes('feliz')) {
-      return {
-        text: botResponses.mood_good[Math.floor(Math.random() * botResponses.mood_good.length)],
-        category: 'mood'
-      };
-    }
-    
-    // Academic help
-    if (message.includes('estudio') || message.includes('examen') || message.includes('tarea') || message.includes('académico')) {
-      return {
-        text: botResponses.academic[Math.floor(Math.random() * botResponses.academic.length)],
-        category: 'academic'
-      };
-    }
-    
-    // Wellness
-    if (message.includes('cansado') || message.includes('estrés') || message.includes('ansiedad') || message.includes('agua')) {
-      return {
-        text: botResponses.wellness[Math.floor(Math.random() * botResponses.wellness.length)],
-        category: 'wellness'
-      };
-    }
-    
-    // Motivation
-    if (message.includes('motivación') || message.includes('desanimado') || message.includes('ayuda') || message.includes('consejo')) {
-      return {
-        text: botResponses.motivation[Math.floor(Math.random() * botResponses.motivation.length)],
-        category: 'motivation'
-      };
-    }
-    
-    // Tips
-    if (message.includes('tip') || message.includes('dato') || message.includes('curioso')) {
-      return {
-        text: botResponses.tips[Math.floor(Math.random() * botResponses.tips.length)],
-        category: 'tips'
-      };
-    }
-    
-    // Default response
-    const allResponses = [
-      ...botResponses.motivation,
-      ...botResponses.wellness,
-      "Cuéntame más sobre eso. ¿Cómo te hace sentir?",
-      "Entiendo. ¿Hay algo específico en lo que te gustaría trabajar?",
-      "Es interesante lo que me cuentas. ¿Has intentado alguna estrategia para manejarlo?"
-    ];
-    
-    return {
-      text: allResponses[Math.floor(Math.random() * allResponses.length)],
-      category: 'general'
-    };
-  };
 
   /**
    * Sends user message and generates bot response
@@ -165,37 +56,17 @@ const Chatbot: React.FC = () => {
       }, 1000);
     } catch (error) {
       console.error('Error al obtener respuesta:', error);
-      const fallbackResponse = getBotResponse(inputText);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: fallbackResponse.text,
+        text: "Lo siento, hubo un error al procesar tu mensaje. ¿Podrías intentarlo de nuevo?",
         isBot: true,
-        timestamp: new Date(),
-        category: fallbackResponse.category
+        timestamp: new Date()
       };
       
       setTimeout(() => {
         setMessages(prev => [...prev, errorMessage]);
         setIsTyping(false);
       }, 1000);
-    }
-  };
-
-  /**
-   * Gets appropriate icon for message category
-   */
-  const getCategoryIcon = (category?: string) => {
-    switch (category) {
-      case 'mood':
-        return <Heart className="w-4 h-4 text-red-500" />;
-      case 'academic':
-        return <BookOpen className="w-4 h-4 text-blue-500" />;
-      case 'wellness':
-        return <Coffee className="w-4 h-4 text-green-500" />;
-      case 'motivation':
-        return <Lightbulb className="w-4 h-4 text-yellow-500" />;
-      default:
-        return <Bot className="w-4 h-4 text-white" />;
     }
   };
 
@@ -255,7 +126,7 @@ const Chatbot: React.FC = () => {
               }`}>
                 {message.isBot && (
                   <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
-                    {getCategoryIcon(message.category)}
+                    <Bot className="w-4 h-4 text-white" />
                   </div>
                 )}
                 
