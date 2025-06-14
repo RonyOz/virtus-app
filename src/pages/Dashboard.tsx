@@ -183,7 +183,7 @@ const Dashboard: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Mi Bienestar</h1>
+            <h1 className="text-3xl md:text-4xl mt-6 font-bold mb-2">Mi Bienestar</h1>
             <p className="text-lg opacity-90 mb-6">Seguimiento diario de tu estado</p>
             
             <div className="inline-flex flex-col items-center bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4">
@@ -207,7 +207,7 @@ const Dashboard: React.FC = () => {
         className="px-4 -mt-6 pb-8 space-y-6"
       >
         {/* Recommendation Card */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl mt-8 p-6 shadow-lg">
           <div className="flex items-center mb-4">
             <div className={`w-10 h-10 bg-gradient-to-r ${recommendation.gradient} rounded-xl flex items-center justify-center mr-3`}>
               <TrendingUp className="w-5 h-5 text-white" />
