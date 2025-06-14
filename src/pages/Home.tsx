@@ -80,7 +80,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="text-center text-white"
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 mt-8">
               ¡Hola! 👋
             </h1>
             <p className="text-lg opacity-90 mb-4 max-w-md mx-auto">
@@ -98,7 +98,7 @@ const Home: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="px-4 -mt-6 pb-8 space-y-6"
+        className="px-4 mt-6 pb-8 space-y-6"
       >
         {/* Quick Actions */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
