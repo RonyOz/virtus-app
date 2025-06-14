@@ -27,9 +27,6 @@
     "react-router-dom": "^6.20.1",
     "recharts": "^2.15.3",
     "tailwindcss": "^4.1.10"
-    "recharts": "^2.8.0",
-    "tailwindcss": "^4.1.10",
-    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.23",
