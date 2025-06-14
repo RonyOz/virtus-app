@@ -43,7 +43,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
   return (
     <>
       {/* Mobile Navigation - Bottom Tabs */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-2">
         <div className="bg-white/80 backdrop-blur-lg border-t border-gray-200/50 px-2 py-1 safe-area-bottom">
           <div className="flex justify-around items-center max-w-screen-sm mx-auto">
             {navItems.map((item) => {
@@ -82,7 +82,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
       <nav className="hidden md:flex fixed top-0 left-0 h-full w-64 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 z-50">
         <div className="flex flex-col w-full p-6">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold gradient-text">Virtus</h2>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Virtus</h2>
             <p className="text-sm text-gray-600 mt-1">Bienestar Universitario</p>
           </div>
           
