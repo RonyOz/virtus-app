@@ -1,5 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+/**
+ * Wellness Data Interface
+ * Tracks various wellness metrics on a scale of 1-10
+ */
 interface WellnessData {
   mood: number;
   energy: number;
@@ -10,6 +14,10 @@ interface WellnessData {
   lastUpdated: Date;
 }
 
+/**
+ * Virtual Pet Interface
+ * Gamification element that responds to user's wellness activities
+ */
 interface Pet {
   name: string;
   level: number;
@@ -18,6 +26,10 @@ interface Pet {
   lastFed: Date;
 }
 
+/**
+ * Daily Goal Interface
+ * Represents tasks and objectives for the user
+ */
 interface DailyGoal {
   id: string;
   title: string;
@@ -25,6 +37,10 @@ interface DailyGoal {
   category: 'academic' | 'wellness' | 'social';
 }
 
+/**
+ * Wellness Context Interface
+ * Main context interface for the wellness application
+ */
 interface WellnessContextType {
   wellnessData: WellnessData;
   pet: Pet;
@@ -38,6 +54,10 @@ interface WellnessContextType {
 
 const WellnessContext = createContext<WellnessContextType | undefined>(undefined);
 
+/**
+ * Motivational messages for daily inspiration
+ * These can be customized based on brand voice and tone
+ */
 const motivationalMessages = [
   "Cada día es una nueva oportunidad para crecer 🌱",
   "Tu bienestar es una inversión, no un gasto ✨",
@@ -49,7 +69,12 @@ const motivationalMessages = [
   "Celebra cada pequeña victoria 🎉"
 ];
 
-export function WellnessProvider({ children }: { children: React.ReactNode }) {
+/**
+ * Wellness Provider Component
+ * Manages all wellness-related state and provides context to child components
+ */
+export function WellnessProvider({ children }: { children: ReactNode }) {
+  // Initialize wellness data with default values
   const [wellnessData, setWellnessData] = useState<WellnessData>({
     mood: 7,
     energy: 6,
@@ -60,6 +85,7 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     lastUpdated: new Date(),
   });
 
+  // Initialize virtual pet with default values
   const [pet, setPet] = useState<Pet>({
     name: 'Luna',
     level: 5,
@@ -68,6 +94,7 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     lastFed: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
   });
 
+  // Initialize daily goals
   const [dailyGoals, setDailyGoals] = useState<DailyGoal[]>([
     {
       id: '1',
@@ -100,6 +127,10 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]
   );
 
+  /**
+   * Updates wellness data with new values
+   * @param data - Partial wellness data to update
+   */
   const updateWellnessData = (data: Partial<WellnessData>) => {
     setWellnessData(prev => ({ 
       ...prev, 
@@ -108,6 +139,9 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  /**
+   * Feeds the virtual pet, increasing happiness and health
+   */
   const feedPet = () => {
     setPet(prev => ({
       ...prev,
@@ -117,6 +151,10 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  /**
+   * Marks a goal as completed and rewards the pet
+   * @param goalId - ID of the goal to complete
+   */
   const completeGoal = (goalId: string) => {
     setDailyGoals(prev => 
       prev.map(goal => 
@@ -132,7 +170,10 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  // Update pet status over time
+  /**
+   * Effect to update pet status over time
+   * Pet happiness and health decay if not cared for
+   */
   useEffect(() => {
     const interval = setInterval(() => {
       setPet(prev => {
@@ -167,6 +208,11 @@ export function WellnessProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Custom hook to use wellness context
+ * @returns WellnessContextType
+ * @throws Error if used outside of WellnessProvider
+ */
 export function useWellness() {
   const context = useContext(WellnessContext);
   if (context === undefined) {
