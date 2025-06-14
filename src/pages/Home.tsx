@@ -315,7 +315,7 @@ const Home: React.FC = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             ¿Cuánta energía tienes hoy? ⚡
           </h3>
           <div className="flex justify-center gap-3">
