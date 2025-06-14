@@ -108,7 +108,7 @@ export function WellnessProvider({ children }: { children: ReactNode }) {
     },
     {
       id: '2',
-      title: 'Revisar apuntes de cálculo',
+      title: 'Dar una caminata de 30 minutos',
       completed: false,
       category: 'academic'
     },

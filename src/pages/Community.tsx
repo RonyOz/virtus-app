@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 interface CommunityPost {
   id: string;
   author: string;
-  category: 'alimentacion' | 'sueño' | 'concentracion' | 'motivacion' | 'ansiedad' | 'general';
+  category: 'alimentacion' | 'sueño' | 'concentracion' | 'motivacion' | 'ansiedad' | 'general' | 'foráneos';
   title: string;
   content: string;
   likes: number;
@@ -35,18 +35,26 @@ const Community: React.FC = () => {
 
   const interests: Interest[] = [
     {
+      id: 'foráneos',
+      name: 'Foráneos',
+      icon: <BookOpen className="w-5 h-5" />,
+      color: 'text-orange-600',
+      gradient: 'from-orange-400 to-yellow-500',
+      members: 234
+    },
+    {
       id: 'alimentacion',
       name: 'Alimentación',
       icon: <Coffee className="w-5 h-5" />,
-      color: 'text-yellow-600',
-      gradient: 'from-yellow-400 to-orange-500',
+      color: 'text-amber-600',
+      gradient: 'from-amber-400 to-yellow-500',
       members: 234
     },
     {
       id: 'sueño',
       name: 'Descanso',
       icon: <Moon className="w-5 h-5" />,
-      color: 'text-blue-600',
+      color: 'text-blue-700',
       gradient: 'from-blue-400 to-indigo-500',
       members: 189
     },
@@ -54,31 +62,31 @@ const Community: React.FC = () => {
       id: 'concentracion',
       name: 'Concentración',
       icon: <Brain className="w-5 h-5" />,
-      color: 'text-purple-600',
-      gradient: 'from-purple-400 to-indigo-500',
+      color: 'text-violet-700',
+      gradient: 'from-violet-400 to-indigo-500',
       members: 156
     },
     {
       id: 'motivacion',
       name: 'Motivación',
       icon: <Smile className="w-5 h-5" />,
-      color: 'text-green-600',
-      gradient: 'from-green-400 to-emerald-500',
+      color: 'text-emerald-600',
+      gradient: 'from-emerald-400 to-green-500',
       members: 312
     },
     {
       id: 'ansiedad',
       name: 'Ansiedad',
       icon: <Heart className="w-5 h-5" />,
-      color: 'text-red-600',
-      gradient: 'from-red-400 to-pink-500',
+      color: 'text-pink-600',
+      gradient: 'from-pink-400 to-rose-500',
       members: 98
     },
     {
       id: 'general',
       name: 'General',
       icon: <Users className="w-5 h-5" />,
-      color: 'text-gray-600',
+      color: 'text-gray-700',
       gradient: 'from-gray-400 to-slate-500',
       members: 445
     }
@@ -142,6 +150,43 @@ const Community: React.FC = () => {
       likes: 94,
       replies: 31,
       timestamp: '12h',
+      isHelpful: true,
+      aiModerated: true
+    },
+    // Posts de categoría foráneos
+    {
+      id: '6',
+      author: 'Foraneo_Nuevo',
+      category: 'foráneos',
+      title: '¿Cómo hago amigos en una nueva ciudad?',
+      content: 'Me mudé hace poco y me sentía solo. Unirme a clubes estudiantiles y asistir a eventos de la universidad me ayudó mucho. ¡No tengas miedo de presentarte!',
+      likes: 38,
+      replies: 10,
+      timestamp: '3h',
+      isHelpful: true,
+      aiModerated: true
+    },
+    {
+      id: '7',
+      author: 'CocinaExpress',
+      category: 'foráneos',
+      title: 'Receta fácil para sobrevivir lejos de casa',
+      content: 'Si eres foráneo y no sabes cocinar, prueba arroz con atún y verduras congeladas. Es barato, rápido y saludable.',
+      likes: 22,
+      replies: 5,
+      timestamp: '5h',
+      isHelpful: true,
+      aiModerated: true
+    },
+    {
+      id: '8',
+      author: 'LejosDeCasa',
+      category: 'foráneos',
+      title: 'Extrañar a la familia',
+      content: 'Llamar a mi familia cada domingo me ayuda a sentirme cerca, aunque esté lejos. También hago videollamadas cuando cocino, así compartimos tiempo juntos.',
+      likes: 41,
+      replies: 13,
+      timestamp: '7h',
       isHelpful: true,
       aiModerated: true
     }

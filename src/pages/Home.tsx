@@ -146,19 +146,11 @@ const Home: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             ¿Cómo te sientes hoy?
           </h3>
-          <div className="flex items-center justify-center mb-4">
-            <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${getMoodColor()} mr-3`}></div>
-            <span className="text-gray-700 font-medium">
-              {wellnessData.mood >= 8 ? 'Excelente' :
-                wellnessData.mood >= 6 ? 'Bien' :
-                  wellnessData.mood >= 4 ? 'Regular' : 'Necesitas apoyo'}
-            </span>
-          </div>
           <Link
             to="/chatbot"
             className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-medium text-center block hover:shadow-lg transition-all duration-300"
           >
-            Hablar con IA
+            Hablar con asistente IA
           </Link>
         </motion.div>
 
@@ -324,7 +316,7 @@ const Home: React.FC = () => {
 
         {/* Daily Questions - Energy Level */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
             ¿Cuánta energía tienes hoy? ⚡
           </h3>
           <div className="flex justify-center gap-3">
@@ -342,6 +334,7 @@ const Home: React.FC = () => {
             ))}
           </div>
         </motion.div>
+
 
         {/* Daily Questions - Gratitude */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
@@ -371,6 +364,48 @@ const Home: React.FC = () => {
             />
           )}
         </motion.div>
+
+          {/* Daily Questions - Anxiety Level */}
+          <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+              ¿Cómo te has sentido de ansiedad hoy? 😰
+            </h3>
+            <div className="flex justify-center gap-3">
+              {['Nada', 'Leve', 'Moderada', 'Alta'].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => handleAnswer('anxiety', label)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.anxiety === label
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Daily Questions - Stress Level */}
+          <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+              ¿Qué nivel de estrés sentiste hoy? 😵
+            </h3>
+            <div className="flex justify-center gap-3">
+              {['Bajo', 'Medio', 'Alto', 'Muy alto'].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => handleAnswer('stress', label)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${dailyAnswers.stress === label
+                    ? 'bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
 
         {/* Daily Questions - Hydration Level */}
         <motion.div variants={itemVariants} className="bg-white rounded-2xl p-6 shadow-lg">
