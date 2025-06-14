@@ -195,7 +195,7 @@ const Chatbot: React.FC = () => {
       case 'motivation':
         return <Lightbulb className="w-4 h-4 text-yellow-500" />;
       default:
-        return <Bot className="w-4 h-4 text-gray-500" />;
+        return <Bot className="w-4 h-4 text-white" />;
     }
   };
 
